@@ -29,25 +29,11 @@
 	}
 
 
-2.在AndroidManifest.xml中添加:
-
-	<application
-		...
-        <activity
-            android:name="com.fire.photoselector.activity.PhotoSelectorActivity"
-            android:configChanges="orientation|screenSize"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name="com.fire.photoselector.activity.PhotoViewActivity"
-            android:configChanges="orientation|screenSize"
-            android:screenOrientation="portrait" />
-	</application>
-
-3.所需权限:
+2.在AndroidManifest.xml中添加权限:
 
 	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
-4.Java代码:
+3.Java代码:
 
 	在需要开启照片选择器的地方调用:
 	private void selectPhotos(int sum, int columnCount) {

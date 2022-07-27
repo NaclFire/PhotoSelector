@@ -2,7 +2,6 @@ package com.fire.photoselector.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -11,13 +10,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
 import com.fire.photoselector.R;
 import com.fire.photoselector.bean.ImageFolderBean;
 import com.fire.photoselector.models.PhotoMessage;
+import com.fire.photoselector.utils.ScreenUtil;
 
 import java.util.List;
-
-import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
 
 /**
  * Created by Fire on 2017/4/10.
@@ -28,10 +28,12 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
     private Context context;
     private List<ImageFolderBean> list;
     private OnRecyclerViewItemClickListener listener;
+    private final RequestOptions options;
 
     public FolderListAdapter(Context context, List<ImageFolderBean> list) {
         this.context = context;
         this.list = list;
+        options = RequestOptions.bitmapTransform(new RoundedCorners(ScreenUtil.dp2px(context, 5)));
     }
 
     public interface OnRecyclerViewItemClickListener {
@@ -65,7 +67,11 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
             holder.rootView.setBackgroundColor(context.getResources().getColor(R.color.textWriteColor));
         }
         holder.tvAlbumName.setText(list.get(position).getFolderName());
-        Glide.with(context).load(list.get(position).getImagePaths().get(0)).into(holder.ivFolderThumb);
+        if (list.get(position).getImagePaths().size() != 0) {
+            Glide.with(context).asBitmap().load(list.get(position).getImagePaths().get(0)).apply(options).into(holder.ivFolderThumb);
+        } else {
+            holder.ivFolderThumb.setImageResource(R.drawable.shape_none_thumb);
+        }
         String string = context.getResources().getString(R.string.album_photo_number);
         String format = String.format(string, list.get(position).getImageCounts());
         holder.tvAlbumPhotoNumber.setText(format);
