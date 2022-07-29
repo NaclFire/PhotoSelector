@@ -13,9 +13,9 @@
 
         <ImageView
             android:id="@+id/iv_folder_thumb"
-            android:scaleType="fitXY"
             android:layout_width="55dp"
-            android:layout_height="55dp"/>
+            android:scaleType="centerCrop"
+            android:layout_height="55dp" />
 
         <ImageView
             android:id="@+id/iv_photo_filter_checked"

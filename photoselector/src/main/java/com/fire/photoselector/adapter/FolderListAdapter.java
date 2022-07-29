@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
 import com.fire.photoselector.R;
@@ -28,12 +29,12 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
     private Context context;
     private List<ImageFolderBean> list;
     private OnRecyclerViewItemClickListener listener;
-    private final RequestOptions options;
+    private final RequestOptions transform;
 
     public FolderListAdapter(Context context, List<ImageFolderBean> list) {
         this.context = context;
         this.list = list;
-        options = RequestOptions.bitmapTransform(new RoundedCorners(ScreenUtil.dp2px(context, 5)));
+        transform = new RequestOptions().transform(new CenterCrop(), new RoundedCorners(ScreenUtil.dp2px(context, 5)));
     }
 
     public interface OnRecyclerViewItemClickListener {
@@ -68,7 +69,7 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
         }
         holder.tvAlbumName.setText(list.get(position).getFolderName());
         if (list.get(position).getImagePaths().size() != 0) {
-            Glide.with(context).asBitmap().load(list.get(position).getImagePaths().get(0)).apply(options).into(holder.ivFolderThumb);
+            Glide.with(context).asBitmap().load(list.get(position).getImagePaths().get(0)).apply(transform).into(holder.ivFolderThumb);
         } else {
             holder.ivFolderThumb.setImageResource(R.drawable.shape_none_thumb);
         }

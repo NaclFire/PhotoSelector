@@ -207,7 +207,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
                 PHOTOS_LIST_TRANSFER.addAll(SELECTED_PHOTOS);
                 startActivityForResult(intent, REQUEST_PREVIEW_PHOTO);
             }
-        } else if (v == btSelectFullImage) {// 选择全图
+        } else if (v == btSelectFullImage) {// 选择原图
             PhotoSelectorSetting.IS_SELECTED_FULL_IMAGE = !PhotoSelectorSetting.IS_SELECTED_FULL_IMAGE;
             changeOKButtonStatus();
         } else if (v == vAlpha) {// 点击相册列表外部
@@ -250,7 +250,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
                     String format = String.format(string, MAX_PHOTO_SUM);
                     Toast.makeText(PhotoSelectorActivity.this, format, Toast.LENGTH_SHORT).show();
                 }
-                photoListAdapter.notifyDataSetChanged();
+                photoListAdapter.notifyItemChanged(position);
             } else {
                 Intent intent = new Intent(PhotoSelectorActivity.this, PhotoViewActivity.class);
                 PHOTOS_LIST_TRANSFER.clear();
@@ -332,8 +332,6 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
             for (String selectedPhoto : SELECTED_PHOTOS) {
                 size += new File(selectedPhoto).length();
             }
-            float f = (float) size / (1024 * 1024);
-            Log.i(TAG, "changeOKButtonStatus: " + f);
             String string = getString(R.string.full_image_with_size);
             String format = String.format(string, GetFileSize.getSize(size));
             btSelectFullImage.setText(format);
