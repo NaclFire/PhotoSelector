@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
@@ -13,6 +14,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -27,6 +29,7 @@ import com.fire.photoselector.R;
 import com.fire.photoselector.adapter.FolderListAdapter;
 import com.fire.photoselector.adapter.PhotoListAdapter;
 import com.fire.photoselector.bean.ImageFolderBean;
+import com.fire.photoselector.databinding.ActivityPhotoSelectorBinding;
 import com.fire.photoselector.models.PhotoMessage;
 import com.fire.photoselector.models.PhotoSelectorSetting;
 import com.fire.photoselector.utils.GetFileSize;
@@ -69,40 +72,27 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
      * 目录列表
      */
     private FolderListAdapter folderListAdapter;
-    private TextView tvCancel;
-    private Button btSelectOK;
-    private Button btPreviewImage;
-    private Button btSelectFullImage;
-    private TextView tvAlbumName;
-    private ImageView ivAlbumArrow;
-    private RecyclerView rvFolderList;
-    private View vAlpha;
     private List<String> chileList;
     private List<String> value;
     private List<String> photoFolder;
-    private RecyclerView rvPhotoList;
+    private com.fire.photoselector.databinding.ActivityPhotoSelectorBinding binding;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_photo_selector);
+        binding = ActivityPhotoSelectorBinding.inflate(LayoutInflater.from(this));
+        setContentView(binding.getRoot());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
         getImages();
-        rvPhotoList = (RecyclerView) findViewById(R.id.rv_photo_list);
-        tvCancel = (TextView) findViewById(R.id.tv_select_cancel);
-        tvAlbumName = (TextView) findViewById(R.id.tv_album_name);
-        ivAlbumArrow = (ImageView) findViewById(R.id.iv_album_arrow);
-        btSelectOK = (Button) findViewById(R.id.bt_select_ok);
-        btPreviewImage = (Button) findViewById(R.id.bt_preview_image);
-        btSelectFullImage = (Button) findViewById(R.id.bt_select_full_image);
-        rvFolderList = (RecyclerView) findViewById(R.id.rv_folder_list);
-        vAlpha = findViewById(R.id.v_alpha);
-        tvCancel.setOnClickListener(this);
-        tvAlbumName.setOnClickListener(this);
-        ivAlbumArrow.setOnClickListener(this);
-        btSelectOK.setOnClickListener(this);
-        btPreviewImage.setOnClickListener(this);
-        btSelectFullImage.setOnClickListener(this);
-        vAlpha.setOnClickListener(this);
+        binding.tvSelectCancel.setOnClickListener(this);
+        binding.tvAlbumName.setOnClickListener(this);
+        binding.ivAlbumArrow.setOnClickListener(this);
+        binding.btSelectOk.setOnClickListener(this);
+        binding.btPreviewImage.setOnClickListener(this);
+        binding.btSelectFullImage.setOnClickListener(this);
+        binding.vAlpha.setOnClickListener(this);
         Intent intent = getIntent();
         SELECTED_PHOTOS = intent.getStringArrayListExtra(LAST_MODIFIED_LIST);
         if (SELECTED_PHOTOS.size() == 0) {
@@ -110,19 +100,19 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         }
         photoListAdapter = new PhotoListAdapter(this, photoGroupMap.get("相机胶卷"));
         if (COLUMN_COUNT <= 1) {
-            rvPhotoList.setLayoutManager(new LinearLayoutManager(this));
+            binding.rvPhotoList.setLayoutManager(new LinearLayoutManager(this));
         } else {
-            rvPhotoList.setLayoutManager(new GridLayoutManager(this, COLUMN_COUNT));
+            binding.rvPhotoList.setLayoutManager(new GridLayoutManager(this, COLUMN_COUNT));
         }
-        rvPhotoList.setAdapter(photoListAdapter);
+        binding.rvPhotoList.setAdapter(photoListAdapter);
         photoListAdapter.setOnRecyclerViewItemClickListener(new OnPhotoListClick());
-        rvFolderList.setLayoutManager(new LinearLayoutManager(this));
-        ViewGroup.LayoutParams lp = rvFolderList.getLayoutParams();
+        binding.rvFolderList.setLayoutManager(new LinearLayoutManager(this));
+        ViewGroup.LayoutParams lp = binding.rvFolderList.getLayoutParams();
         lp.height = (int) (ScreenUtil.getScreenHeight(this) * 0.618);
-        rvFolderList.setLayoutParams(lp);
+        binding.rvFolderList.setLayoutParams(lp);
         folderListAdapter = new FolderListAdapter(this, photoFolders);
         folderListAdapter.setOnRecyclerViewItemClickListener(new OnFolderListClick());
-        rvFolderList.setAdapter(folderListAdapter);
+        binding.rvFolderList.setAdapter(folderListAdapter);
         changeOKButtonStatus();
     }
 
@@ -185,12 +175,12 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
 
     @Override
     public void onClick(View v) {
-        if (v == tvCancel) {// 取消
+        if (v == binding.tvSelectCancel) {// 取消
             setResult(RESULT_CANCELED);
             finish();
-        } else if (v == tvAlbumName) {// 选择相册
+        } else if (v == binding.tvAlbumName) {// 选择相册
             toggleFolderList();
-        } else if (v == btSelectOK) {// 确定按钮
+        } else if (v == binding.btSelectOk) {// 确定按钮
             if (SELECTED_PHOTOS.size() != 0) {
                 ArrayList<String> image = new ArrayList<>();
                 image.addAll(SELECTED_PHOTOS);
@@ -200,17 +190,17 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
                 setResult(RESULT_OK, intent);
                 finish();
             }
-        } else if (v == btPreviewImage) {// 预览照片
+        } else if (v == binding.btPreviewImage) {// 预览照片
             if (SELECTED_PHOTOS.size() != 0) {
                 Intent intent = new Intent(this, PhotoViewActivity.class);
                 PHOTOS_LIST_TRANSFER.clear();
                 PHOTOS_LIST_TRANSFER.addAll(SELECTED_PHOTOS);
                 startActivityForResult(intent, REQUEST_PREVIEW_PHOTO);
             }
-        } else if (v == btSelectFullImage) {// 选择原图
+        } else if (v == binding.btSelectFullImage) {// 选择原图
             PhotoSelectorSetting.IS_SELECTED_FULL_IMAGE = !PhotoSelectorSetting.IS_SELECTED_FULL_IMAGE;
             changeOKButtonStatus();
-        } else if (v == vAlpha) {// 点击相册列表外部
+        } else if (v == binding.vAlpha) {// 点击相册列表外部
             toggleFolderList();
         }
     }
@@ -219,7 +209,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
-            PhotoSelectorSetting.SCREEN_RATIO = (float) vAlpha.getWidth() / vAlpha.getHeight();
+            PhotoSelectorSetting.SCREEN_RATIO = (float) binding.vAlpha.getWidth() / binding.vAlpha.getHeight();
         }
     }
 
@@ -231,9 +221,9 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
             photoFolder = photoGroupMap.get(photoFolders.get(position).getFolderName());
             photoListAdapter.setData(photoFolder);
             folderListAdapter.notifyDataSetChanged();
-            tvAlbumName.setText(photoFolders.get(position).getFolderName());
+            binding.tvAlbumName.setText(photoFolders.get(position).getFolderName());
             toggleFolderList();
-            rvPhotoList.smoothScrollToPosition(0);
+            binding.rvPhotoList.smoothScrollToPosition(0);
         }
     }
 
@@ -282,7 +272,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
 
     @Override
     public void onBackPressed() {
-        if (rvFolderList.isShown()) {
+        if (binding.rvFolderList.isShown()) {
             toggleFolderList();
         } else {
             super.onBackPressed();
@@ -291,18 +281,18 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
 
     private void toggleFolderList() {
         Animation animation;
-        if (rvFolderList.isShown()) {
-            rvFolderList.setVisibility(View.GONE);
-            vAlpha.setVisibility(View.INVISIBLE);
-            ivAlbumArrow.setImageResource(R.drawable.ic_arrow_down_yellow);
+        if (binding.rvFolderList.isShown()) {
+            binding.rvFolderList.setVisibility(View.GONE);
+            binding.vAlpha.setVisibility(View.INVISIBLE);
+            binding.ivAlbumArrow.setImageResource(R.drawable.ic_arrow_down_yellow);
             animation = AnimationUtils.loadAnimation(this, R.anim.popup_hidden_anim);
         } else {
-            rvFolderList.setVisibility(View.VISIBLE);
-            vAlpha.setVisibility(View.VISIBLE);
-            ivAlbumArrow.setImageResource(R.drawable.ic_arrow_up_yellow);
+            binding.rvFolderList.setVisibility(View.VISIBLE);
+            binding.vAlpha.setVisibility(View.VISIBLE);
+            binding.ivAlbumArrow.setImageResource(R.drawable.ic_arrow_up_yellow);
             animation = AnimationUtils.loadAnimation(this, R.anim.popup_show_anim);
         }
-        rvFolderList.setAnimation(animation);
+        binding.rvFolderList.setAnimation(animation);
         folderListAdapter.notifyDataSetChanged();
     }
 
@@ -315,17 +305,17 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
 
     private void changeOKButtonStatus() {
         if (SELECTED_PHOTOS.size() == 0) {
-            btSelectOK.setBackgroundResource(R.drawable.button_unclickable);
-            btSelectOK.setTextColor(getResources().getColor(R.color.textSecondColor));
-            btSelectOK.setText(getString(R.string.ok));
-            btPreviewImage.setTextColor(getResources().getColor(R.color.textSecondColor));
+            binding.btSelectOk.setBackgroundResource(R.drawable.button_unclickable);
+            binding.btSelectOk.setTextColor(getResources().getColor(R.color.textSecondColor));
+            binding.btSelectOk.setText(getString(R.string.ok));
+            binding.btPreviewImage.setTextColor(getResources().getColor(R.color.textSecondColor));
         } else {
-            btSelectOK.setBackgroundResource(R.drawable.button_clickable);
-            btSelectOK.setTextColor(getResources().getColor(R.color.textWriteColor));
+            binding.btSelectOk.setBackgroundResource(R.drawable.button_clickable);
+            binding.btSelectOk.setTextColor(getResources().getColor(R.color.textWriteColor));
             String string = getResources().getString(R.string.ok_with_number);
             String format = String.format(string, SELECTED_PHOTOS.size());
-            btSelectOK.setText(format);
-            btPreviewImage.setTextColor(getResources().getColor(R.color.textBlackColor));
+            binding.btSelectOk.setText(format);
+            binding.btPreviewImage.setTextColor(getResources().getColor(R.color.textBlackColor));
         }
         if (PhotoSelectorSetting.IS_SELECTED_FULL_IMAGE) {
             long size = 0;
@@ -334,15 +324,15 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
             }
             String string = getString(R.string.full_image_with_size);
             String format = String.format(string, GetFileSize.getSize(size));
-            btSelectFullImage.setText(format);
+            binding.btSelectFullImage.setText(format);
             Drawable drawable = getResources().getDrawable(R.drawable.choose_full_image_checked);
             drawable.setBounds(0, 0, drawable.getMinimumWidth(), drawable.getMinimumHeight());
-            btSelectFullImage.setCompoundDrawables(drawable, null, null, null);
+            binding.btSelectFullImage.setCompoundDrawables(drawable, null, null, null);
         } else {
-            btSelectFullImage.setText(getString(R.string.full_image));
+            binding.btSelectFullImage.setText(getString(R.string.full_image));
             Drawable drawable = getResources().getDrawable(R.drawable.choose_full_image_unchecked);
             drawable.setBounds(0, 0, drawable.getMinimumWidth(), drawable.getMinimumHeight());
-            btSelectFullImage.setCompoundDrawables(drawable, null, null, null);
+            binding.btSelectFullImage.setCompoundDrawables(drawable, null, null, null);
         }
     }
 }
