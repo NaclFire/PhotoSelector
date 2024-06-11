@@ -1,5 +1,13 @@
 package com.fire.photoselector.activity;
 
+import static com.fire.photoselector.models.PhotoMessage.PHOTOS_LIST_TRANSFER;
+import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
+import static com.fire.photoselector.models.PhotoSelectorSetting.COLUMN_COUNT;
+import static com.fire.photoselector.models.PhotoSelectorSetting.IS_SELECTED_FULL_IMAGE;
+import static com.fire.photoselector.models.PhotoSelectorSetting.LAST_MODIFIED_LIST;
+import static com.fire.photoselector.models.PhotoSelectorSetting.MAX_PHOTO_SUM;
+import static com.fire.photoselector.models.PhotoSelectorSetting.SELECTED_FULL_IMAGE;
+
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
@@ -12,7 +20,6 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,9 +27,6 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.fire.photoselector.R;
@@ -32,22 +36,14 @@ import com.fire.photoselector.bean.ImageFolderBean;
 import com.fire.photoselector.databinding.ActivityPhotoSelectorBinding;
 import com.fire.photoselector.models.PhotoMessage;
 import com.fire.photoselector.models.PhotoSelectorSetting;
-import com.fire.photoselector.utils.GetFileSize;
+import com.fire.photoselector.utils.FileUtils;
 import com.fire.photoselector.utils.ScreenUtil;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.fire.photoselector.models.PhotoMessage.PHOTOS_LIST_TRANSFER;
-import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
-import static com.fire.photoselector.models.PhotoSelectorSetting.COLUMN_COUNT;
-import static com.fire.photoselector.models.PhotoSelectorSetting.IS_SELECTED_FULL_IMAGE;
-import static com.fire.photoselector.models.PhotoSelectorSetting.SELECTED_FULL_IMAGE;
-import static com.fire.photoselector.models.PhotoSelectorSetting.LAST_MODIFIED_LIST;
-import static com.fire.photoselector.models.PhotoSelectorSetting.MAX_PHOTO_SUM;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by Fire on 2017/4/8.
@@ -59,7 +55,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
     /**
      * 保存相册目录名和相册所有照片路径
      */
-    private HashMap<String, List<String>> photoGroupMap = new HashMap<>();
+    private ConcurrentHashMap<String, List<String>> photoGroupMap = new ConcurrentHashMap<>();
     /**
      * 保存相册目录名
      */
@@ -75,7 +71,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
     private List<String> chileList;
     private List<String> value;
     private List<String> photoFolder;
-    private com.fire.photoselector.databinding.ActivityPhotoSelectorBinding binding;
+    private ActivityPhotoSelectorBinding binding;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -83,22 +79,25 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         binding = ActivityPhotoSelectorBinding.inflate(LayoutInflater.from(this));
         setContentView(binding.getRoot());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            getWindow().setStatusBarColor(getColor(R.color.textWriteColor));
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
         }
-        getImages();
         binding.tvSelectCancel.setOnClickListener(this);
         binding.tvAlbumName.setOnClickListener(this);
         binding.ivAlbumArrow.setOnClickListener(this);
         binding.btSelectOk.setOnClickListener(this);
         binding.btPreviewImage.setOnClickListener(this);
-        binding.btSelectFullImage.setOnClickListener(this);
+        binding.btSelectOriginalImage.setOnClickListener(this);
         binding.vAlpha.setOnClickListener(this);
         Intent intent = getIntent();
         SELECTED_PHOTOS = intent.getStringArrayListExtra(LAST_MODIFIED_LIST);
-        if (SELECTED_PHOTOS.size() == 0) {
+        if (SELECTED_PHOTOS == null || SELECTED_PHOTOS.size() == 0) {
             IS_SELECTED_FULL_IMAGE = false;
         }
-        photoListAdapter = new PhotoListAdapter(this, photoGroupMap.get("相机胶卷"));
+        photoFolder = new ArrayList<>();
+        photoGroupMap.put(getString(R.string.all_photos), photoFolder);
+        photoListAdapter = new PhotoListAdapter(this, photoGroupMap.get(getString(R.string.all_photos)));
         if (COLUMN_COUNT <= 1) {
             binding.rvPhotoList.setLayoutManager(new LinearLayoutManager(this));
         } else {
@@ -113,6 +112,8 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         folderListAdapter = new FolderListAdapter(this, photoFolders);
         folderListAdapter.setOnRecyclerViewItemClickListener(new OnFolderListClick());
         binding.rvFolderList.setAdapter(folderListAdapter);
+        PhotoSelectorSetting.STATUS_BAR_HEIGHT = ScreenUtil.getStatusBarHeight(this);
+        getImages();
         changeOKButtonStatus();
     }
 
@@ -120,36 +121,67 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
      * 扫描手机中所有图片
      */
     private void getImages() {
-        Uri imageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        String sortOrder = MediaStore.Images.Media.DATE_ADDED + " DESC";
-        ContentResolver cr = getContentResolver();
-        Cursor cursor = cr.query(imageUri, null, null, null, sortOrder);
-        if (cursor == null) {
-            return;
-        }
-        photoFolder = new ArrayList<>();
-        photoGroupMap.put(getString(R.string.all_photos), photoFolder);
-        while (cursor.moveToNext()) {
-            //获取图片的路径
-            String path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
-            photoGroupMap.get(getString(R.string.all_photos)).add(path);
-            //获取该图片的父路径名
-            String parentName = new File(path).getParentFile().getName();
-            //根据父路径名将图片放入到mGroupMap中
-            if (photoGroupMap.containsKey(parentName)) {
-                photoGroupMap.get(parentName).add(path);
-            } else {
-                chileList = new ArrayList<>();
-                chileList.add(path);
-                photoGroupMap.put(parentName, chileList);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Uri imageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                String sortOrder = MediaStore.Images.Media.DATE_ADDED + " DESC";
+                ContentResolver cr = getContentResolver();
+                Cursor cursor = cr.query(imageUri, null, null, null, sortOrder);
+                if (cursor == null) {
+                    return;
+                }
+
+                while (cursor.moveToNext()) {
+                    //获取图片的路径
+                    String path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
+                    List<String> allPhotos = photoGroupMap.get(getString(R.string.all_photos));
+                    if (allPhotos != null) {
+                        allPhotos.add(path);
+                    }
+                    //获取该图片的父路径名
+                    File file = new File(path).getParentFile();
+                    if (file != null) {
+                        String parentName = file.getName();
+                        //根据父路径名将图片放入到mGroupMap中
+                        if (photoGroupMap.containsKey(parentName)) {
+                            List<String> key = photoGroupMap.get(parentName);
+                            if (key == null) {
+                                chileList = new ArrayList<>();
+                                chileList.add(path);
+                                photoGroupMap.put(parentName, chileList);
+                            } else {
+                                key.add(path);
+                            }
+                        } else {
+                            chileList = new ArrayList<>();
+                            chileList.add(path);
+                            photoGroupMap.put(parentName, chileList);
+                        }
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (photoListAdapter != null) {
+                                    List<String> list = photoGroupMap.get(getString(R.string.all_photos));
+                                    if (list != null) {
+                                        photoListAdapter.notifyItemChanged(list.size());
+                                    }
+                                }
+                                if (folderListAdapter != null) {
+                                    folderListAdapter.notifyDataSetChanged();
+                                }
+                            }
+                        });
+                    }
+                }
+                //扫描图片完成
+                cursor.close();
+                photoFolders.addAll(subGroupOfImage(photoGroupMap));
             }
-        }
-        //扫描图片完成
-        cursor.close();
-        photoFolders.addAll(subGroupOfImage(photoGroupMap));
+        }).start();
     }
 
-    private List<ImageFolderBean> subGroupOfImage(HashMap<String, List<String>> mGroupMap) {
+    private List<ImageFolderBean> subGroupOfImage(ConcurrentHashMap<String, List<String>> mGroupMap) {
         List<ImageFolderBean> list = new ArrayList<>();
         ImageFolderBean imageFolderBean;
         for (Map.Entry<String, List<String>> entry : mGroupMap.entrySet()) {
@@ -197,7 +229,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
                 PHOTOS_LIST_TRANSFER.addAll(SELECTED_PHOTOS);
                 startActivityForResult(intent, REQUEST_PREVIEW_PHOTO);
             }
-        } else if (v == binding.btSelectFullImage) {// 选择原图
+        } else if (v == binding.btSelectOriginalImage) {// 选择原图
             PhotoSelectorSetting.IS_SELECTED_FULL_IMAGE = !PhotoSelectorSetting.IS_SELECTED_FULL_IMAGE;
             changeOKButtonStatus();
         } else if (v == binding.vAlpha) {// 点击相册列表外部
@@ -210,6 +242,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
             PhotoSelectorSetting.SCREEN_RATIO = (float) binding.vAlpha.getWidth() / binding.vAlpha.getHeight();
+            Log.e(TAG, "onWindowFocusChanged: PhotoSelectorSetting.SCREEN_RATIO = " + PhotoSelectorSetting.SCREEN_RATIO);
         }
     }
 
@@ -285,12 +318,12 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
             binding.rvFolderList.setVisibility(View.GONE);
             binding.vAlpha.setVisibility(View.INVISIBLE);
             binding.ivAlbumArrow.setImageResource(R.drawable.ic_arrow_down_yellow);
-            animation = AnimationUtils.loadAnimation(this, R.anim.popup_hidden_anim);
+            animation = AnimationUtils.loadAnimation(this, R.anim.top_popup_hidden_anim);
         } else {
             binding.rvFolderList.setVisibility(View.VISIBLE);
             binding.vAlpha.setVisibility(View.VISIBLE);
             binding.ivAlbumArrow.setImageResource(R.drawable.ic_arrow_up_yellow);
-            animation = AnimationUtils.loadAnimation(this, R.anim.popup_show_anim);
+            animation = AnimationUtils.loadAnimation(this, R.anim.top_popup_show_anim);
         }
         binding.rvFolderList.setAnimation(animation);
         folderListAdapter.notifyDataSetChanged();
@@ -318,21 +351,17 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
             binding.btPreviewImage.setTextColor(getResources().getColor(R.color.textBlackColor));
         }
         if (PhotoSelectorSetting.IS_SELECTED_FULL_IMAGE) {
-            long size = 0;
-            for (String selectedPhoto : SELECTED_PHOTOS) {
-                size += new File(selectedPhoto).length();
-            }
             String string = getString(R.string.full_image_with_size);
-            String format = String.format(string, GetFileSize.getSize(size));
-            binding.btSelectFullImage.setText(format);
-            Drawable drawable = getResources().getDrawable(R.drawable.choose_full_image_checked);
+            String format = String.format(string, FileUtils.getSizeString(FileUtils.getFileLength(SELECTED_PHOTOS)));
+            binding.btSelectOriginalImage.setText(format);
+            Drawable drawable = getResources().getDrawable(R.drawable.svg_choose_original_image_checked);
             drawable.setBounds(0, 0, drawable.getMinimumWidth(), drawable.getMinimumHeight());
-            binding.btSelectFullImage.setCompoundDrawables(drawable, null, null, null);
+            binding.btSelectOriginalImage.setCompoundDrawables(drawable, null, null, null);
         } else {
-            binding.btSelectFullImage.setText(getString(R.string.full_image));
-            Drawable drawable = getResources().getDrawable(R.drawable.choose_full_image_unchecked);
+            binding.btSelectOriginalImage.setText(getString(R.string.full_image));
+            Drawable drawable = getResources().getDrawable(R.drawable.svg_choose_original_image_unchecked);
             drawable.setBounds(0, 0, drawable.getMinimumWidth(), drawable.getMinimumHeight());
-            binding.btSelectFullImage.setCompoundDrawables(drawable, null, null, null);
+            binding.btSelectOriginalImage.setCompoundDrawables(drawable, null, null, null);
         }
     }
 }

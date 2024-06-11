@@ -52,21 +52,23 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Glide.with(context).load(list.get(position)).into(holder.ivPhotoThumb);
-        if (list.get(position).toLowerCase().endsWith("gif")) {
-            holder.ivGifImage.setVisibility(View.VISIBLE);
-        } else {
-            holder.ivGifImage.setVisibility(View.GONE);
+        if (list != null) {
+            Glide.with(context).load(list.get(position)).into(holder.ivPhotoThumb);
+            if (list.get(position).toLowerCase().endsWith("gif")) {
+                holder.ivGifImage.setVisibility(View.VISIBLE);
+            } else {
+                holder.ivGifImage.setVisibility(View.GONE);
+            }
+            if (SELECTED_PHOTOS.contains(list.get(position))) {
+                holder.ivPhotoChecked.setImageResource(R.drawable.compose_photo_preview_right);
+            } else {
+                holder.ivPhotoChecked.setImageResource(R.drawable.compose_photo_preview_default);
+            }
+            holder.ivPhotoChecked.setOnClickListener(this);
+            holder.ivPhotoChecked.setTag(position);
+            holder.rootView.setOnClickListener(this);
+            holder.rootView.setTag(position);
         }
-        if (SELECTED_PHOTOS.contains(list.get(position))) {
-            holder.ivPhotoChecked.setImageResource(R.drawable.compose_photo_preview_right);
-        } else {
-            holder.ivPhotoChecked.setImageResource(R.drawable.compose_photo_preview_default);
-        }
-        holder.ivPhotoChecked.setOnClickListener(this);
-        holder.ivPhotoChecked.setTag(position);
-        holder.rootView.setOnClickListener(this);
-        holder.rootView.setTag(position);
     }
 
 

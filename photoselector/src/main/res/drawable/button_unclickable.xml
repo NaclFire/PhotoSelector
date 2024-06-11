@@ -6,7 +6,7 @@
         android:startColor="#05000000" /><!--背景颜色渐变 angle为渐变角度-->
     <solid android:color="#F2F2F2" /><!-- 背景填充颜色 -->
     <stroke
-        android:width="1px"
-        android:color="#D0D0D0" /><!-- 描边，边框宽度、颜色 -->
+        android:width="2px"
+        android:color="#FFFFFF" /><!-- 描边，边框宽度、颜色 -->
     <corners android:radius="6dp" /><!-- 边角圆弧的半径 -->
 </shape>

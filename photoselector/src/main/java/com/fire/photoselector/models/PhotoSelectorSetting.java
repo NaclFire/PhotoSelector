@@ -19,9 +19,13 @@ public class PhotoSelectorSetting {
      */
     public static float SCREEN_RATIO;
     /**
+     * 状态栏高度
+     */
+    public static int STATUS_BAR_HEIGHT;
+    /**
      * 选择原图
      */
-    public static String SELECTED_FULL_IMAGE = "is_selected_full_image";
+    public static String SELECTED_FULL_IMAGE = "is_selected_original_image";
     /**
      * 是否选择原图
      */
