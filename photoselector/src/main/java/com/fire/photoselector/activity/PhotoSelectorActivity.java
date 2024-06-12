@@ -84,8 +84,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
         }
         binding.tvSelectCancel.setOnClickListener(this);
-        binding.tvAlbumName.setOnClickListener(this);
-        binding.ivAlbumArrow.setOnClickListener(this);
+        binding.llChooseAlbum.setOnClickListener(this);
         binding.btSelectOk.setOnClickListener(this);
         binding.btPreviewImage.setOnClickListener(this);
         binding.btSelectOriginalImage.setOnClickListener(this);
@@ -210,7 +209,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         if (v == binding.tvSelectCancel) {// 取消
             setResult(RESULT_CANCELED);
             finish();
-        } else if (v == binding.tvAlbumName) {// 选择相册
+        } else if (v == binding.llChooseAlbum) {// 选择相册
             toggleFolderList();
         } else if (v == binding.btSelectOk) {// 确定按钮
             if (SELECTED_PHOTOS.size() != 0) {
@@ -317,12 +316,12 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         if (binding.rvFolderList.isShown()) {
             binding.rvFolderList.setVisibility(View.GONE);
             binding.vAlpha.setVisibility(View.INVISIBLE);
-            binding.ivAlbumArrow.setImageResource(R.drawable.ic_arrow_down_yellow);
+            binding.ivAlbumArrow.setImageResource(R.drawable.svg_arrow_down_yellow);
             animation = AnimationUtils.loadAnimation(this, R.anim.top_popup_hidden_anim);
         } else {
             binding.rvFolderList.setVisibility(View.VISIBLE);
             binding.vAlpha.setVisibility(View.VISIBLE);
-            binding.ivAlbumArrow.setImageResource(R.drawable.ic_arrow_up_yellow);
+            binding.ivAlbumArrow.setImageResource(R.drawable.svg_arrow_up_yellow);
             animation = AnimationUtils.loadAnimation(this, R.anim.top_popup_show_anim);
         }
         binding.rvFolderList.setAnimation(animation);
@@ -351,7 +350,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
             binding.btPreviewImage.setTextColor(getResources().getColor(R.color.textBlackColor));
         }
         if (PhotoSelectorSetting.IS_SELECTED_FULL_IMAGE) {
-            String string = getString(R.string.full_image_with_size);
+            String string = getString(R.string.original_image_with_size);
             String format = String.format(string, FileUtils.getSizeString(FileUtils.getFileLength(SELECTED_PHOTOS)));
             binding.btSelectOriginalImage.setText(format);
             Drawable drawable = getResources().getDrawable(R.drawable.svg_choose_original_image_checked);
@@ -359,7 +358,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
             binding.btSelectOriginalImage.setCompoundDrawables(drawable, null, null, null);
         } else {
             binding.btSelectOriginalImage.setText(getString(R.string.full_image));
-            Drawable drawable = getResources().getDrawable(R.drawable.svg_choose_original_image_unchecked);
+            Drawable drawable = getResources().getDrawable(R.drawable.svg_choose_original_image_default);
             drawable.setBounds(0, 0, drawable.getMinimumWidth(), drawable.getMinimumHeight());
             binding.btSelectOriginalImage.setCompoundDrawables(drawable, null, null, null);
         }

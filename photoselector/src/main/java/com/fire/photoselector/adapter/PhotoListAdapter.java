@@ -60,9 +60,9 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
                 holder.ivGifImage.setVisibility(View.GONE);
             }
             if (SELECTED_PHOTOS.contains(list.get(position))) {
-                holder.ivPhotoChecked.setImageResource(R.drawable.compose_photo_preview_right);
+                holder.ivPhotoChecked.setImageResource(R.drawable.svg_compose_photo_preview_checked);
             } else {
-                holder.ivPhotoChecked.setImageResource(R.drawable.compose_photo_preview_default);
+                holder.ivPhotoChecked.setImageResource(R.drawable.svg_compose_photo_preview_default);
             }
             holder.ivPhotoChecked.setOnClickListener(this);
             holder.ivPhotoChecked.setTag(position);

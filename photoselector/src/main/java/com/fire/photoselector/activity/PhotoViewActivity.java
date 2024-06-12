@@ -93,7 +93,7 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
                 changePhotoSelectStatus(position);
             } else {
                 // 添加失败,超出可选照片上限
-                binding.ivPhotoSelected.setImageResource(R.drawable.compose_photo_preview_default);
+                binding.ivPhotoSelected.setImageResource(R.drawable.svg_compose_photo_preview_default);
                 String string = getString(R.string.photo_sum_max);
                 String format = String.format(string, MAX_PHOTO_SUM);
                 Toast.makeText(this, format, Toast.LENGTH_SHORT).show();
@@ -167,9 +167,9 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
      */
     private void changePhotoSelectStatus(int position) {
         if (PhotoMessage.isPhotoSelected(PHOTOS_LIST_TRANSFER.get(position))) {
-            binding.ivPhotoSelected.setImageResource(R.drawable.compose_photo_preview_right);
+            binding.ivPhotoSelected.setImageResource(R.drawable.svg_compose_photo_preview_checked);
         } else {
-            binding.ivPhotoSelected.setImageResource(R.drawable.compose_photo_preview_default);
+            binding.ivPhotoSelected.setImageResource(R.drawable.svg_compose_photo_preview_default);
         }
     }
 
@@ -192,7 +192,7 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
             binding.btPreviewImage.setTextColor(getResources().getColor(R.color.textBlackColor));
         }
         if (PhotoSelectorSetting.IS_SELECTED_FULL_IMAGE) {
-            String string = getString(R.string.full_image_with_size);
+            String string = getString(R.string.original_image_with_size);
             String format = String.format(string, FileUtils.getSizeString(FileUtils.getFileLength(SELECTED_PHOTOS)));
             binding.btSelectOriginalImage.setText(format);
             Drawable drawable = getResources().getDrawable(R.drawable.svg_choose_original_image_checked);
@@ -200,7 +200,7 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
             binding.btSelectOriginalImage.setCompoundDrawables(drawable, null, null, null);
         } else {
             binding.btSelectOriginalImage.setText(getString(R.string.full_image));
-            Drawable drawable = getResources().getDrawable(R.drawable.svg_choose_original_image_unchecked);
+            Drawable drawable = getResources().getDrawable(R.drawable.svg_choose_original_image_default);
             drawable.setBounds(0, 0, drawable.getMinimumWidth(), drawable.getMinimumHeight());
             binding.btSelectOriginalImage.setCompoundDrawables(drawable, null, null, null);
         }
