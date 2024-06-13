@@ -38,7 +38,7 @@ public class PhotoViewAdapter extends PagerAdapter {
         // 只初始化4个PhotoView,防止内存溢出
         for (int x = 0; x < 4; x++) {
             PhotoView pv = new PhotoView(context);
-            pv.setBackgroundResource(R.color.textWriteColor);
+            pv.setBackgroundResource(R.color.photoViewBGColor);
             ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             pv.setLayoutParams(layoutParams);
             photoViewList.add(pv);
@@ -74,7 +74,6 @@ public class PhotoViewAdapter extends PagerAdapter {
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(list.get(position), options);
         photoRatio = (float) options.outWidth / options.outHeight;
-        Log.e(TAG, "instantiateItem: photoRatio = " + photoRatio);
         // 如果当前照片宽高比小于PhotoView宽高比,说明图片的高度超出了屏幕范围,需要从图片最上方显示,设置ScaleType.FIT_START
         // 其余情况设置ScaleType.FIT_CENTER
         if (photoRatio < PhotoSelectorSetting.SCREEN_RATIO) {

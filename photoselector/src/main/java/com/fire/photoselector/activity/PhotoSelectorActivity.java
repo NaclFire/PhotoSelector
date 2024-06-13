@@ -15,11 +15,15 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,6 +33,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.fire.photoselector.R;
 import com.fire.photoselector.adapter.FolderListAdapter;
 import com.fire.photoselector.adapter.PhotoListAdapter;
@@ -36,13 +41,16 @@ import com.fire.photoselector.bean.ImageFolderBean;
 import com.fire.photoselector.databinding.ActivityPhotoSelectorBinding;
 import com.fire.photoselector.models.PhotoMessage;
 import com.fire.photoselector.models.PhotoSelectorSetting;
+import com.fire.photoselector.utils.ACache;
 import com.fire.photoselector.utils.FileUtils;
 import com.fire.photoselector.utils.ScreenUtil;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -52,6 +60,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PhotoSelectorActivity extends AppCompatActivity implements OnClickListener {
     private static final String TAG = "PhotoSelectorActivity";
     private static final int REQUEST_PREVIEW_PHOTO = 100;
+    private static final int MSG_REFRESH_PHOTO_ADAPTER = 0x01;
+    private static final int MSG_REFRESH_FOLDER_ADAPTER = 0x02;
     /**
      * 保存相册目录名和相册所有照片路径
      */
@@ -70,8 +80,35 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
     private FolderListAdapter folderListAdapter;
     private List<String> chileList;
     private List<String> value;
-    private List<String> photoFolder;
+    private List<String> currentPhotoFolder;
     private ActivityPhotoSelectorBinding binding;
+    private MyHandler handler;
+
+    private static class MyHandler extends Handler {
+        private WeakReference<PhotoSelectorActivity> reference;
+
+        public MyHandler(PhotoSelectorActivity photoSelectorActivity) {
+            reference = new WeakReference<>(photoSelectorActivity);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            PhotoSelectorActivity activity = reference.get();
+            switch (msg.what) {
+                case MSG_REFRESH_PHOTO_ADAPTER:
+                    if (msg.arg1 == -1) {
+                        activity.photoListAdapter.updatePhotoList(activity.binding.rvPhotoList, activity.currentPhotoFolder);
+                    } else {
+                        activity.photoListAdapter.notifyItemChanged(msg.arg1);
+                    }
+                    break;
+                case MSG_REFRESH_FOLDER_ADAPTER:
+                    activity.photoListAdapter.notifyDataSetChanged();
+                    break;
+            }
+        }
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -83,6 +120,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
         }
+        handler = new MyHandler(this);
         binding.tvSelectCancel.setOnClickListener(this);
         binding.llChooseAlbum.setOnClickListener(this);
         binding.btSelectOk.setOnClickListener(this);
@@ -94,15 +132,16 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         if (SELECTED_PHOTOS == null || SELECTED_PHOTOS.size() == 0) {
             IS_SELECTED_FULL_IMAGE = false;
         }
-        photoFolder = new ArrayList<>();
-        photoGroupMap.put(getString(R.string.all_photos), photoFolder);
-        photoListAdapter = new PhotoListAdapter(this, photoGroupMap.get(getString(R.string.all_photos)));
+        List<String> allPhoto = new ArrayList<>();
+        photoGroupMap.put(getString(R.string.all_photos), new ArrayList<>());
+        photoListAdapter = new PhotoListAdapter(this, allPhoto);
         if (COLUMN_COUNT <= 1) {
             binding.rvPhotoList.setLayoutManager(new LinearLayoutManager(this));
         } else {
             binding.rvPhotoList.setLayoutManager(new GridLayoutManager(this, COLUMN_COUNT));
         }
         binding.rvPhotoList.setAdapter(photoListAdapter);
+        binding.rvPhotoList.addOnScrollListener(new MyOnScrollListener());
         photoListAdapter.setOnRecyclerViewItemClickListener(new OnPhotoListClick());
         binding.rvFolderList.setLayoutManager(new LinearLayoutManager(this));
         ViewGroup.LayoutParams lp = binding.rvFolderList.getLayoutParams();
@@ -123,59 +162,47 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         new Thread(new Runnable() {
             @Override
             public void run() {
+                currentPhotoFolder = ACache.get(PhotoSelectorActivity.this).getList("photo");
+                if (currentPhotoFolder != null) {
+                    sendNotifyMsg(MSG_REFRESH_PHOTO_ADAPTER, -1);
+                }
                 Uri imageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-                String sortOrder = MediaStore.Images.Media.DATE_ADDED + " DESC";
+                String sortOrder = MediaStore.Images.Media.DATE_TAKEN + " DESC";
                 ContentResolver cr = getContentResolver();
                 Cursor cursor = cr.query(imageUri, null, null, null, sortOrder);
                 if (cursor == null) {
                     return;
                 }
-
                 while (cursor.moveToNext()) {
                     //获取图片的路径
                     String path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
-                    List<String> allPhotos = photoGroupMap.get(getString(R.string.all_photos));
-                    if (allPhotos != null) {
-                        allPhotos.add(path);
-                    }
+                    Objects.requireNonNull(photoGroupMap.get(getString(R.string.all_photos))).add(path);
+//                    if (!photoFolder.contains(path)) {
+//                        photoFolder.add(path);
+//                        sendNotifyMsg(MSG_REFRESH_PHOTO_ADAPTER, photoFolder.indexOf(path));
+//                    }
                     //获取该图片的父路径名
                     File file = new File(path).getParentFile();
                     if (file != null) {
                         String parentName = file.getName();
                         //根据父路径名将图片放入到mGroupMap中
-                        if (photoGroupMap.containsKey(parentName)) {
-                            List<String> key = photoGroupMap.get(parentName);
-                            if (key == null) {
-                                chileList = new ArrayList<>();
-                                chileList.add(path);
-                                photoGroupMap.put(parentName, chileList);
-                            } else {
-                                key.add(path);
-                            }
-                        } else {
+                        List<String> key = photoGroupMap.get(parentName);
+                        if (key == null) {
                             chileList = new ArrayList<>();
                             chileList.add(path);
                             photoGroupMap.put(parentName, chileList);
+                        } else {
+                            key.add(path);
                         }
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (photoListAdapter != null) {
-                                    List<String> list = photoGroupMap.get(getString(R.string.all_photos));
-                                    if (list != null) {
-                                        photoListAdapter.notifyItemChanged(list.size());
-                                    }
-                                }
-                                if (folderListAdapter != null) {
-                                    folderListAdapter.notifyDataSetChanged();
-                                }
-                            }
-                        });
                     }
                 }
                 //扫描图片完成
                 cursor.close();
                 photoFolders.addAll(subGroupOfImage(photoGroupMap));
+                currentPhotoFolder = photoGroupMap.get(getString(R.string.all_photos));
+                ACache.get(PhotoSelectorActivity.this).put("photo", photoGroupMap.get(getString(R.string.all_photos)));
+                sendNotifyMsg(MSG_REFRESH_FOLDER_ADAPTER, -1);
+                sendNotifyMsg(MSG_REFRESH_PHOTO_ADAPTER, -1);
             }
         }).start();
     }
@@ -250,11 +277,17 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         @Override
         public void onRecyclerViewItemClick(View v, int position) {
             toggleFolderSelected(position);
-            photoFolder = photoGroupMap.get(photoFolders.get(position).getFolderName());
-            photoListAdapter.setData(photoFolder);
+            currentPhotoFolder = photoGroupMap.get(photoFolders.get(position).getFolderName());
+            toggleFolderList();
             folderListAdapter.notifyDataSetChanged();
             binding.tvAlbumName.setText(photoFolders.get(position).getFolderName());
-            toggleFolderList();
+            binding.llChooseAlbum.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+//                    photoListAdapter.setData(currentPhotoFolder);
+                    photoListAdapter.updatePhotoList(binding.rvPhotoList, currentPhotoFolder);
+                }
+            }, 100);
             binding.rvPhotoList.smoothScrollToPosition(0);
         }
     }
@@ -264,7 +297,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         @Override
         public void onRecyclerViewItemClick(View v, int position) {
             if (v.getId() == R.id.iv_photo_checked) {
-                boolean photoSelected = PhotoMessage.togglePhotoSelected(photoFolder.get(position));
+                boolean photoSelected = PhotoMessage.togglePhotoSelected(currentPhotoFolder.get(position));
                 if (photoSelected) {
                     changeOKButtonStatus();
                 } else {
@@ -276,7 +309,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
             } else {
                 Intent intent = new Intent(PhotoSelectorActivity.this, PhotoViewActivity.class);
                 PHOTOS_LIST_TRANSFER.clear();
-                PHOTOS_LIST_TRANSFER.addAll(photoFolder);
+                PHOTOS_LIST_TRANSFER.addAll(currentPhotoFolder);
                 intent.putExtra("Index", position);
                 startActivityForResult(intent, REQUEST_PREVIEW_PHOTO);
             }
@@ -361,6 +394,36 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
             Drawable drawable = getResources().getDrawable(R.drawable.svg_choose_original_image_default);
             drawable.setBounds(0, 0, drawable.getMinimumWidth(), drawable.getMinimumHeight());
             binding.btSelectOriginalImage.setCompoundDrawables(drawable, null, null, null);
+        }
+    }
+
+    private void sendNotifyMsg(int what, int index) {
+        if (handler != null) {
+            Message message = new Message();
+            message.what = what;
+            message.arg1 = index;
+            handler.sendMessage(message);
+        }
+    }
+
+    private class MyOnScrollListener extends RecyclerView.OnScrollListener {
+        @Override
+        public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+            super.onScrollStateChanged(recyclerView, newState);
+            switch (newState) {
+                case RecyclerView.SCROLL_STATE_DRAGGING:
+                    // 拖动时
+                    Glide.with(PhotoSelectorActivity.this).pauseRequests();
+                    break;
+                case RecyclerView.SCROLL_STATE_SETTLING:
+                    // 惯性滑动时
+
+                    break;
+                case RecyclerView.SCROLL_STATE_IDLE:
+                    // 静止时
+                    Glide.with(PhotoSelectorActivity.this).resumeRequests();
+                    break;
+            }
         }
     }
 }

@@ -1,17 +1,25 @@
 package com.fire.photoselector.adapter;
 
+import android.app.Activity;
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DecodeFormat;
+import com.bumptech.glide.request.RequestOptions;
 import com.fire.photoselector.R;
 import com.fire.photoselector.view.SquareImageView;
 
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
 
@@ -22,6 +30,7 @@ import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
 
 public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.ViewHolder> implements View.OnClickListener {
     private static final String TAG = "PhotoListAdapter";
+    private final RequestOptions requestOptions;
     private List<String> list;
     private Context context;
     private OnRecyclerViewItemClickListener listener;
@@ -29,6 +38,8 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
     public PhotoListAdapter(Context context, List<String> list) {
         this.context = context;
         this.list = list;
+        requestOptions = new RequestOptions().format(DecodeFormat.PREFER_RGB_565);
+
     }
 
     public interface OnRecyclerViewItemClickListener {
@@ -44,16 +55,31 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
         notifyDataSetChanged();
     }
 
+    public void updatePhotoList(RecyclerView recyclerView, List<String> list) {
+        Executor executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            MyDiffCallback diffCallback = new MyDiffCallback(this.list, list);
+            DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(diffCallback);
+            ((Activity) context).runOnUiThread(() -> {
+                this.list = list;
+                diffResult.dispatchUpdatesTo(this);
+                recyclerView.scrollToPosition(0);
+            });
+        });
+    }
+
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        Log.e(TAG, "onCreateViewHolder: ");
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.photo_item, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
+        Log.e(TAG, "onBindViewHolder: ");
         if (list != null) {
-            Glide.with(context).load(list.get(position)).into(holder.ivPhotoThumb);
+            Glide.with(context).load(list.get(position)).apply(requestOptions).thumbnail(0.5f).into(holder.ivPhotoThumb);
             if (list.get(position).toLowerCase().endsWith("gif")) {
                 holder.ivGifImage.setVisibility(View.VISIBLE);
             } else {
@@ -98,4 +124,35 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
             ivGifImage = (ImageView) view.findViewById(R.id.iv_gif_image);
         }
     }
+
+    private static class MyDiffCallback extends DiffUtil.Callback {
+        private List<String> oldPhoto;
+        private List<String> newPhoto;
+
+        public MyDiffCallback(List<String> oldPhoto, List<String> newPhoto) {
+            this.oldPhoto = oldPhoto;
+            this.newPhoto = newPhoto;
+        }
+
+        @Override
+        public int getOldListSize() {
+            return oldPhoto.size();
+        }
+
+        @Override
+        public int getNewListSize() {
+            return newPhoto.size();
+        }
+
+        @Override
+        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+            return oldPhoto.get(oldItemPosition).equals(newPhoto.get(newItemPosition));
+        }
+
+        @Override
+        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+            return oldPhoto.get(oldItemPosition).equals(newPhoto.get(newItemPosition));
+        }
+    }
+
 }
