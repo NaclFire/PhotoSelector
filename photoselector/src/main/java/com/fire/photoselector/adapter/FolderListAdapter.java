@@ -76,7 +76,6 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
         String string = context.getResources().getString(R.string.album_photo_number);
         String format = String.format(string, list.get(position).getImageCounts());
         holder.tvAlbumPhotoNumber.setText(format);
-        holder.rootView.setOnClickListener(this);
         holder.rootView.setTag(position);
     }
 
@@ -102,6 +101,7 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
         ViewHolder(View view) {
             super(view);
             rootView = view;
+            rootView.setOnClickListener(FolderListAdapter.this);
             ivFolderThumb = (ImageView) view.findViewById(R.id.iv_folder_thumb);
             tvAlbumName = (TextView) view.findViewById(R.id.tv_album_name);
             tvAlbumPhotoNumber = (TextView) view.findViewById(R.id.tv_album_photo_number);

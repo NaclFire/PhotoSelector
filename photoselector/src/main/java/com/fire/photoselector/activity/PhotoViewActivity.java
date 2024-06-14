@@ -111,7 +111,7 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
                 startActivityForResult(intent, REQUEST_PREVIEW_PHOTO);
             }
         } else if (v == binding.btSelectOriginalImage) {// 选择原图
-            PhotoSelectorSetting.IS_SELECTED_FULL_IMAGE = !PhotoSelectorSetting.IS_SELECTED_FULL_IMAGE;
+            PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE = !PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE;
             changeOKButtonStatus();
         }
     }
@@ -191,7 +191,7 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
             binding.btSelectOk.setText(format);
             binding.btPreviewImage.setTextColor(getResources().getColor(R.color.textBlackColor));
         }
-        if (PhotoSelectorSetting.IS_SELECTED_FULL_IMAGE) {
+        if (PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE) {
             String string = getString(R.string.original_image_with_size);
             String format = String.format(string, FileUtils.getSizeString(FileUtils.getFileLength(SELECTED_PHOTOS)));
             binding.btSelectOriginalImage.setText(format);

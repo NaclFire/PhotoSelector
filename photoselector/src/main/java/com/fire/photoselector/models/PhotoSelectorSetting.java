@@ -25,9 +25,10 @@ public class PhotoSelectorSetting {
     /**
      * 选择原图
      */
-    public static String SELECTED_FULL_IMAGE = "is_selected_original_image";
+    public static String SELECTED_ORIGINAL_IMAGE = "is_selected_original_image";
     /**
      * 是否选择原图
      */
-    public static boolean IS_SELECTED_FULL_IMAGE = false;
+    public static boolean IS_SELECTED_ORIGINAL_IMAGE = false;
+    public static int ITEM_SIZE;
 }

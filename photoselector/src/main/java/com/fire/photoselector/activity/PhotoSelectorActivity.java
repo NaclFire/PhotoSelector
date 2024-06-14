@@ -3,11 +3,13 @@ package com.fire.photoselector.activity;
 import static com.fire.photoselector.models.PhotoMessage.PHOTOS_LIST_TRANSFER;
 import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
 import static com.fire.photoselector.models.PhotoSelectorSetting.COLUMN_COUNT;
-import static com.fire.photoselector.models.PhotoSelectorSetting.IS_SELECTED_FULL_IMAGE;
+import static com.fire.photoselector.models.PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE;
+import static com.fire.photoselector.models.PhotoSelectorSetting.ITEM_SIZE;
 import static com.fire.photoselector.models.PhotoSelectorSetting.LAST_MODIFIED_LIST;
 import static com.fire.photoselector.models.PhotoSelectorSetting.MAX_PHOTO_SUM;
-import static com.fire.photoselector.models.PhotoSelectorSetting.SELECTED_FULL_IMAGE;
+import static com.fire.photoselector.models.PhotoSelectorSetting.SELECTED_ORIGINAL_IMAGE;
 
+import android.animation.ObjectAnimator;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
@@ -17,11 +19,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -44,6 +46,8 @@ import com.fire.photoselector.models.PhotoSelectorSetting;
 import com.fire.photoselector.utils.ACache;
 import com.fire.photoselector.utils.FileUtils;
 import com.fire.photoselector.utils.ScreenUtil;
+import com.fire.photoselector.view.PreloadGridLayoutManager;
+import com.fire.photoselector.view.PreloadLinearLayoutManager;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -52,6 +56,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Fire on 2017/4/8.
@@ -120,9 +127,11 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
         }
+        ITEM_SIZE = (ScreenUtil.getScreenWidth(this) - ScreenUtil.dp2px(this, COLUMN_COUNT * 2)) / COLUMN_COUNT;
         handler = new MyHandler(this);
         binding.tvSelectCancel.setOnClickListener(this);
-        binding.llChooseAlbum.setOnClickListener(this);
+        binding.tvAlbumName.setOnClickListener(this);
+        binding.ivAlbumArrow.setOnClickListener(this);
         binding.btSelectOk.setOnClickListener(this);
         binding.btPreviewImage.setOnClickListener(this);
         binding.btSelectOriginalImage.setOnClickListener(this);
@@ -130,18 +139,22 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         Intent intent = getIntent();
         SELECTED_PHOTOS = intent.getStringArrayListExtra(LAST_MODIFIED_LIST);
         if (SELECTED_PHOTOS == null || SELECTED_PHOTOS.size() == 0) {
-            IS_SELECTED_FULL_IMAGE = false;
+            IS_SELECTED_ORIGINAL_IMAGE = false;
         }
         List<String> allPhoto = new ArrayList<>();
         photoGroupMap.put(getString(R.string.all_photos), new ArrayList<>());
         photoListAdapter = new PhotoListAdapter(this, allPhoto);
         if (COLUMN_COUNT <= 1) {
-            binding.rvPhotoList.setLayoutManager(new LinearLayoutManager(this));
+            binding.rvPhotoList.setLayoutManager(new PreloadLinearLayoutManager(this));
         } else {
-            binding.rvPhotoList.setLayoutManager(new GridLayoutManager(this, COLUMN_COUNT));
+            binding.rvPhotoList.setLayoutManager(new PreloadGridLayoutManager(this, COLUMN_COUNT));
         }
+        RecyclerView.RecycledViewPool viewPool = new RecyclerView.RecycledViewPool();
+        viewPool.setMaxRecycledViews(0, 200);
+        binding.rvPhotoList.setRecycledViewPool(viewPool);
+        binding.rvPhotoList.setHasFixedSize(true);
         binding.rvPhotoList.setAdapter(photoListAdapter);
-        binding.rvPhotoList.addOnScrollListener(new MyOnScrollListener());
+//        binding.rvPhotoList.addOnScrollListener(new MyOnScrollListener());
         photoListAdapter.setOnRecyclerViewItemClickListener(new OnPhotoListClick());
         binding.rvFolderList.setLayoutManager(new LinearLayoutManager(this));
         ViewGroup.LayoutParams lp = binding.rvFolderList.getLayoutParams();
@@ -166,6 +179,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
                 if (currentPhotoFolder != null) {
                     sendNotifyMsg(MSG_REFRESH_PHOTO_ADAPTER, -1);
                 }
+                SystemClock.sleep(1000);
                 Uri imageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
                 String sortOrder = MediaStore.Images.Media.DATE_TAKEN + " DESC";
                 ContentResolver cr = getContentResolver();
@@ -236,15 +250,14 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         if (v == binding.tvSelectCancel) {// 取消
             setResult(RESULT_CANCELED);
             finish();
-        } else if (v == binding.llChooseAlbum) {// 选择相册
+        } else if (v == binding.tvAlbumName || v == binding.ivAlbumArrow) {// 选择相册
             toggleFolderList();
         } else if (v == binding.btSelectOk) {// 确定按钮
             if (SELECTED_PHOTOS.size() != 0) {
-                ArrayList<String> image = new ArrayList<>();
-                image.addAll(SELECTED_PHOTOS);
+                ArrayList<String> image = new ArrayList<>(SELECTED_PHOTOS);
                 Intent intent = new Intent();
                 intent.putExtra(LAST_MODIFIED_LIST, image);
-                intent.putExtra(SELECTED_FULL_IMAGE, PhotoSelectorSetting.IS_SELECTED_FULL_IMAGE);
+                intent.putExtra(SELECTED_ORIGINAL_IMAGE, PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE);
                 setResult(RESULT_OK, intent);
                 finish();
             }
@@ -256,7 +269,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
                 startActivityForResult(intent, REQUEST_PREVIEW_PHOTO);
             }
         } else if (v == binding.btSelectOriginalImage) {// 选择原图
-            PhotoSelectorSetting.IS_SELECTED_FULL_IMAGE = !PhotoSelectorSetting.IS_SELECTED_FULL_IMAGE;
+            PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE = !PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE;
             changeOKButtonStatus();
         } else if (v == binding.vAlpha) {// 点击相册列表外部
             toggleFolderList();
@@ -277,11 +290,12 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         @Override
         public void onRecyclerViewItemClick(View v, int position) {
             toggleFolderSelected(position);
+            folderListAdapter.notifyDataSetChanged();
             currentPhotoFolder = photoGroupMap.get(photoFolders.get(position).getFolderName());
             toggleFolderList();
-            folderListAdapter.notifyDataSetChanged();
             binding.tvAlbumName.setText(photoFolders.get(position).getFolderName());
-            binding.llChooseAlbum.postDelayed(new Runnable() {
+//            photoListAdapter.updatePhotoList(binding.rvPhotoList, currentPhotoFolder);
+            binding.tvAlbumName.postDelayed(new Runnable() {
                 @Override
                 public void run() {
 //                    photoListAdapter.setData(currentPhotoFolder);
@@ -347,10 +361,10 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
     private void toggleFolderList() {
         Animation animation;
         if (binding.rvFolderList.isShown()) {
-            binding.rvFolderList.setVisibility(View.GONE);
             binding.vAlpha.setVisibility(View.INVISIBLE);
             binding.ivAlbumArrow.setImageResource(R.drawable.svg_arrow_down_yellow);
-            animation = AnimationUtils.loadAnimation(this, R.anim.top_popup_hidden_anim);
+            animation = AnimationUtils.loadAnimation(this, R.anim.top_popup_hidden_anim_fast);
+            binding.rvFolderList.setVisibility(View.GONE);
         } else {
             binding.rvFolderList.setVisibility(View.VISIBLE);
             binding.vAlpha.setVisibility(View.VISIBLE);
@@ -358,7 +372,6 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
             animation = AnimationUtils.loadAnimation(this, R.anim.top_popup_show_anim);
         }
         binding.rvFolderList.setAnimation(animation);
-        folderListAdapter.notifyDataSetChanged();
     }
 
     private void toggleFolderSelected(int position) {
@@ -382,7 +395,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
             binding.btSelectOk.setText(format);
             binding.btPreviewImage.setTextColor(getResources().getColor(R.color.textBlackColor));
         }
-        if (PhotoSelectorSetting.IS_SELECTED_FULL_IMAGE) {
+        if (PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE) {
             String string = getString(R.string.original_image_with_size);
             String format = String.format(string, FileUtils.getSizeString(FileUtils.getFileLength(SELECTED_PHOTOS)));
             binding.btSelectOriginalImage.setText(format);
@@ -413,11 +426,10 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
             switch (newState) {
                 case RecyclerView.SCROLL_STATE_DRAGGING:
                     // 拖动时
-                    Glide.with(PhotoSelectorActivity.this).pauseRequests();
                     break;
                 case RecyclerView.SCROLL_STATE_SETTLING:
                     // 惯性滑动时
-
+                    Glide.with(PhotoSelectorActivity.this).pauseRequests();
                     break;
                 case RecyclerView.SCROLL_STATE_IDLE:
                     // 静止时

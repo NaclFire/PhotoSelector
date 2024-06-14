@@ -10,9 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -71,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
             case REQUEST_SELECT_PHOTO:
                 if (resultCode == RESULT_OK) {
                     result = data.getStringArrayListExtra(PhotoSelectorSetting.LAST_MODIFIED_LIST);
-                    boolean isSelectedFullImage = data.getBooleanExtra(PhotoSelectorSetting.SELECTED_FULL_IMAGE, false);
+                    boolean isSelectedFullImage = data.getBooleanExtra(PhotoSelectorSetting.SELECTED_ORIGINAL_IMAGE, false);
                     photoRecyclerViewAdapter.setList(result, isSelectedFullImage);
                 }
                 break;

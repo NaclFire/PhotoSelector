@@ -13,8 +13,10 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DecodeFormat;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.fire.photoselector.R;
+import com.fire.photoselector.models.PhotoSelectorSetting;
 import com.fire.photoselector.view.SquareImageView;
 
 import java.util.List;
@@ -38,8 +40,10 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
     public PhotoListAdapter(Context context, List<String> list) {
         this.context = context;
         this.list = list;
-        requestOptions = new RequestOptions().format(DecodeFormat.PREFER_RGB_565);
-
+        requestOptions = new RequestOptions()
+                .format(DecodeFormat.PREFER_RGB_565)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .override(PhotoSelectorSetting.ITEM_SIZE, PhotoSelectorSetting.ITEM_SIZE);
     }
 
     public interface OnRecyclerViewItemClickListener {
@@ -70,16 +74,18 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Log.e(TAG, "onCreateViewHolder: ");
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.photo_item, parent, false);
-        return new ViewHolder(view);
+        ViewHolder holder = new ViewHolder(view);
+        holder.ivPhotoChecked.setOnClickListener(this);
+        holder.rootView.setOnClickListener(this);
+        return holder;
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Log.e(TAG, "onBindViewHolder: ");
         if (list != null) {
-            Glide.with(context).load(list.get(position)).apply(requestOptions).thumbnail(0.5f).into(holder.ivPhotoThumb);
+            Glide.with(context).asDrawable().load(list.get(position)).apply(requestOptions)
+                    .into(holder.ivPhotoThumb);
             if (list.get(position).toLowerCase().endsWith("gif")) {
                 holder.ivGifImage.setVisibility(View.VISIBLE);
             } else {
@@ -90,9 +96,7 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
             } else {
                 holder.ivPhotoChecked.setImageResource(R.drawable.svg_compose_photo_preview_default);
             }
-            holder.ivPhotoChecked.setOnClickListener(this);
             holder.ivPhotoChecked.setTag(position);
-            holder.rootView.setOnClickListener(this);
             holder.rootView.setTag(position);
         }
     }
@@ -101,6 +105,13 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
     @Override
     public int getItemCount() {
         return list.size();
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull ViewHolder holder) {
+        super.onViewRecycled(holder);
+//        Glide.with(context).clear(holder.ivPhotoThumb);
+//        holder.ivPhotoThumb.setImageDrawable(null);
     }
 
     @Override
@@ -119,9 +130,9 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
         ViewHolder(View view) {
             super(view);
             rootView = view;
-            ivPhotoThumb = (SquareImageView) view.findViewById(R.id.iv_photo_thumb);
-            ivPhotoChecked = (ImageView) view.findViewById(R.id.iv_photo_checked);
-            ivGifImage = (ImageView) view.findViewById(R.id.iv_gif_image);
+            ivPhotoThumb = view.findViewById(R.id.iv_photo_thumb);
+            ivPhotoChecked = view.findViewById(R.id.iv_photo_checked);
+            ivGifImage = view.findViewById(R.id.iv_gif_image);
         }
     }
 

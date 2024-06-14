@@ -21,30 +21,23 @@
             android:textColor="@color/textBlackColor"
             android:textSize="15sp" />
 
-        <LinearLayout
-            android:id="@+id/ll_choose_album"
+        <TextView
+            android:id="@+id/tv_album_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:padding="5dp">
+            android:padding="5dp"
+            android:text="@string/all_photos"
+            android:textColor="@color/albumColor"
+            android:textSize="17sp" />
 
-            <TextView
-                android:id="@+id/tv_album_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/all_photos"
-                android:textColor="@color/albumColor"
-                android:textSize="17sp" />
-
-            <ImageView
-                android:id="@+id/iv_album_arrow"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="5dp"
-                android:src="@drawable/svg_arrow_down_yellow" />
-        </LinearLayout>
+        <ImageView
+            android:id="@+id/iv_album_arrow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@id/tv_album_name"
+            android:src="@drawable/svg_arrow_down_yellow" />
 
         <Button
             android:id="@+id/bt_select_ok"
