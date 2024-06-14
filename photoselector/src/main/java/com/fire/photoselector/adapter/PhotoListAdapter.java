@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.util.DiffUtil;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,8 +16,10 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DecodeFormat;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
 import com.fire.photoselector.R;
+import com.fire.photoselector.activity.PhotoViewActivity;
 import com.fire.photoselector.models.PhotoSelectorSetting;
 import com.fire.photoselector.view.SquareImageView;
 
@@ -67,7 +71,19 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
             ((Activity) context).runOnUiThread(() -> {
                 this.list = list;
                 diffResult.dispatchUpdatesTo(this);
-                recyclerView.scrollToPosition(0);
+                int firstVisibleItemPosition;
+                if (PhotoSelectorSetting.COLUMN_COUNT == 1) {
+                    LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                    assert layoutManager != null;
+                    firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+                } else {
+                    GridLayoutManager layoutManager = (GridLayoutManager) recyclerView.getLayoutManager();
+                    assert layoutManager != null;
+                    firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+                }
+                if (firstVisibleItemPosition == 0) {
+                    recyclerView.scrollToPosition(0);
+                }
             });
         });
     }
@@ -84,7 +100,9 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         if (list != null) {
-            Glide.with(context).asDrawable().load(list.get(position)).apply(requestOptions)
+            Glide.with(context).load(list.get(position))
+                    .transition(DrawableTransitionOptions.withCrossFade())
+//                    .apply(requestOptions)
                     .into(holder.ivPhotoThumb);
             if (list.get(position).toLowerCase().endsWith("gif")) {
                 holder.ivGifImage.setVisibility(View.VISIBLE);
@@ -105,13 +123,6 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
     @Override
     public int getItemCount() {
         return list.size();
-    }
-
-    @Override
-    public void onViewRecycled(@NonNull ViewHolder holder) {
-        super.onViewRecycled(holder);
-//        Glide.with(context).clear(holder.ivPhotoThumb);
-//        holder.ivPhotoThumb.setImageDrawable(null);
     }
 
     @Override

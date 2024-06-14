@@ -302,7 +302,6 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
                     photoListAdapter.updatePhotoList(binding.rvPhotoList, currentPhotoFolder);
                 }
             }, 100);
-            binding.rvPhotoList.smoothScrollToPosition(0);
         }
     }
 
