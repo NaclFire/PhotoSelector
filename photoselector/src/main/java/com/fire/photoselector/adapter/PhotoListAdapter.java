@@ -2,10 +2,6 @@ package com.fire.photoselector.adapter;
 
 import android.app.Activity;
 import android.content.Context;
-import android.support.v7.util.DiffUtil;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +21,11 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
+
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 
 /**

@@ -4,9 +4,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -31,6 +28,10 @@ import static com.fire.photoselector.models.PhotoMessage.PHOTOS_LIST_TRANSFER;
 import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
 import static com.fire.photoselector.models.PhotoSelectorSetting.LAST_MODIFIED_LIST;
 import static com.fire.photoselector.models.PhotoSelectorSetting.MAX_PHOTO_SUM;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager.widget.ViewPager;
 
 /**
  * Created by Fire on 2017/4/11.

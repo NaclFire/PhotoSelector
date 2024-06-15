@@ -10,11 +10,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -53,6 +48,12 @@ import static com.fire.photoselector.models.PhotoSelectorSetting.ITEM_SIZE;
 import static com.fire.photoselector.models.PhotoSelectorSetting.LAST_MODIFIED_LIST;
 import static com.fire.photoselector.models.PhotoSelectorSetting.MAX_PHOTO_SUM;
 import static com.fire.photoselector.models.PhotoSelectorSetting.SELECTED_ORIGINAL_IMAGE;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * Created by Fire on 2017/4/8.
