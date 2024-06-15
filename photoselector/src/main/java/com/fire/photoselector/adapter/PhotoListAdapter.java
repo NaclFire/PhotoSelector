@@ -2,12 +2,10 @@ package com.fire.photoselector.adapter;
 
 import android.app.Activity;
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +17,6 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
 import com.fire.photoselector.R;
-import com.fire.photoselector.activity.PhotoViewActivity;
 import com.fire.photoselector.models.PhotoSelectorSetting;
 import com.fire.photoselector.view.SquareImageView;
 
@@ -46,7 +43,8 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
         this.list = list;
         requestOptions = new RequestOptions()
                 .format(DecodeFormat.PREFER_RGB_565)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .dontAnimate()
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .override(PhotoSelectorSetting.ITEM_SIZE, PhotoSelectorSetting.ITEM_SIZE);
     }
 
@@ -97,9 +95,11 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         if (list != null) {
-            Glide.with(context).load(list.get(position))
+            Glide.with(context)
+                    .asDrawable()
+                    .load(list.get(position))
+                    .apply(requestOptions)
                     .transition(DrawableTransitionOptions.withCrossFade())
-//                    .apply(requestOptions)
                     .into(holder.ivPhotoThumb);
             if (list.get(position).toLowerCase().endsWith("gif")) {
                 holder.ivGifImage.setVisibility(View.VISIBLE);

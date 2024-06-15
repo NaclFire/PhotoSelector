@@ -1,15 +1,5 @@
 package com.fire.photoselector.activity;
 
-import static com.fire.photoselector.models.PhotoMessage.PHOTOS_LIST_TRANSFER;
-import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
-import static com.fire.photoselector.models.PhotoSelectorSetting.COLUMN_COUNT;
-import static com.fire.photoselector.models.PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE;
-import static com.fire.photoselector.models.PhotoSelectorSetting.ITEM_SIZE;
-import static com.fire.photoselector.models.PhotoSelectorSetting.LAST_MODIFIED_LIST;
-import static com.fire.photoselector.models.PhotoSelectorSetting.MAX_PHOTO_SUM;
-import static com.fire.photoselector.models.PhotoSelectorSetting.SELECTED_ORIGINAL_IMAGE;
-
-import android.animation.ObjectAnimator;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
@@ -19,14 +9,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -56,9 +44,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+
+import static com.fire.photoselector.models.PhotoMessage.PHOTOS_LIST_TRANSFER;
+import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
+import static com.fire.photoselector.models.PhotoSelectorSetting.COLUMN_COUNT;
+import static com.fire.photoselector.models.PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE;
+import static com.fire.photoselector.models.PhotoSelectorSetting.ITEM_SIZE;
+import static com.fire.photoselector.models.PhotoSelectorSetting.LAST_MODIFIED_LIST;
+import static com.fire.photoselector.models.PhotoSelectorSetting.MAX_PHOTO_SUM;
+import static com.fire.photoselector.models.PhotoSelectorSetting.SELECTED_ORIGINAL_IMAGE;
 
 /**
  * Created by Fire on 2017/4/8.
@@ -151,6 +145,9 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         }
         RecyclerView.RecycledViewPool viewPool = new RecyclerView.RecycledViewPool();
         viewPool.setMaxRecycledViews(0, 200);
+        binding.rvPhotoList.setItemViewCacheSize(200);
+        binding.rvPhotoList.setDrawingCacheEnabled(true);
+        binding.rvPhotoList.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
         binding.rvPhotoList.setRecycledViewPool(viewPool);
         binding.rvPhotoList.setHasFixedSize(true);
         binding.rvPhotoList.setAdapter(photoListAdapter);
@@ -179,7 +176,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
                 if (currentPhotoFolder != null) {
                     sendNotifyMsg(MSG_REFRESH_PHOTO_ADAPTER, -1);
                 }
-                SystemClock.sleep(1000);
+//                SystemClock.sleep(1000);
                 Uri imageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
                 String sortOrder = MediaStore.Images.Media.DATE_TAKEN + " DESC";
                 ContentResolver cr = getContentResolver();
@@ -191,10 +188,6 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
                     //获取图片的路径
                     String path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
                     Objects.requireNonNull(photoGroupMap.get(getString(R.string.all_photos))).add(path);
-//                    if (!photoFolder.contains(path)) {
-//                        photoFolder.add(path);
-//                        sendNotifyMsg(MSG_REFRESH_PHOTO_ADAPTER, photoFolder.indexOf(path));
-//                    }
                     //获取该图片的父路径名
                     File file = new File(path).getParentFile();
                     if (file != null) {
@@ -281,7 +274,6 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
             PhotoSelectorSetting.SCREEN_RATIO = (float) binding.vAlpha.getWidth() / binding.vAlpha.getHeight();
-            Log.e(TAG, "onWindowFocusChanged: PhotoSelectorSetting.SCREEN_RATIO = " + PhotoSelectorSetting.SCREEN_RATIO);
         }
     }
 

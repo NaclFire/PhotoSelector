@@ -1,10 +1,5 @@
 package com.fire.photoselector.activity;
 
-import static com.fire.photoselector.models.PhotoMessage.PHOTOS_LIST_TRANSFER;
-import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
-import static com.fire.photoselector.models.PhotoSelectorSetting.LAST_MODIFIED_LIST;
-import static com.fire.photoselector.models.PhotoSelectorSetting.MAX_PHOTO_SUM;
-
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -12,7 +7,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -32,6 +26,11 @@ import com.fire.photoselector.utils.FileUtils;
 import com.fire.photoselector.utils.ScreenUtil;
 
 import java.util.ArrayList;
+
+import static com.fire.photoselector.models.PhotoMessage.PHOTOS_LIST_TRANSFER;
+import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
+import static com.fire.photoselector.models.PhotoSelectorSetting.LAST_MODIFIED_LIST;
+import static com.fire.photoselector.models.PhotoSelectorSetting.MAX_PHOTO_SUM;
 
 /**
  * Created by Fire on 2017/4/11.
@@ -217,13 +216,11 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
         WindowManager.LayoutParams lp = getWindow().getAttributes();
         if (visibility == View.VISIBLE) {//设置为全屏
             PhotoSelectorSetting.SCREEN_RATIO = (float) binding.vpPhotoView.getWidth() / binding.vpPhotoView.getHeight();
-            Log.e(TAG, "onWindowFocusChanged: PhotoSelectorSetting.SCREEN_RATIO = " + PhotoSelectorSetting.SCREEN_RATIO);
             lp.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
             getWindow().setAttributes(lp);
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         } else {//设置为非全屏
             PhotoSelectorSetting.SCREEN_RATIO = (float) binding.vpPhotoView.getWidth() / binding.vpPhotoView.getHeight();
-            Log.e(TAG, "onWindowFocusChanged: PhotoSelectorSetting.SCREEN_RATIO = " + PhotoSelectorSetting.SCREEN_RATIO);
             lp.flags &= (~WindowManager.LayoutParams.FLAG_FULLSCREEN);
             getWindow().setAttributes(lp);
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);

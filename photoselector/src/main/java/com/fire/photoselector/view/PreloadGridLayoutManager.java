@@ -3,7 +3,6 @@ package com.fire.photoselector.view;
 import android.content.Context;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 
 import com.fire.photoselector.models.PhotoSelectorSetting;
 
@@ -27,7 +26,6 @@ public class PreloadGridLayoutManager extends GridLayoutManager {
 
     @Override
     public void collectAdjacentPrefetchPositions(int dx, int dy, RecyclerView.State state, LayoutPrefetchRegistry layoutPrefetchRegistry) {
-        Log.e("TAG", "collectAdjacentPrefetchPositions: " + dy);
         // 获取当前可见的最后一个位置和第一个位置
         int lastVisiblePosition = findLastVisibleItemPosition();
         int firstVisiblePosition = findFirstVisibleItemPosition();

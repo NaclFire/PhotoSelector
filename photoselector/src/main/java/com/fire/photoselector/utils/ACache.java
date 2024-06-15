@@ -7,7 +7,6 @@ import android.graphics.Canvas;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -26,7 +25,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
-import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -618,9 +616,6 @@ public class ACache {
 
                 Long currentTime = System.currentTimeMillis();
                 boolean b = file.setLastModified(currentTime);
-                if (b) {
-                    Log.e(TAG, "file.setLastModified（）成功！");
-                }
                 lastUsageDates.put(file, currentTime);
             }
         }
@@ -629,9 +624,6 @@ public class ACache {
             File file = newFile(key);
             long currentTime = System.currentTimeMillis();
             boolean b = file.setLastModified(currentTime);
-            if (b) {
-                Log.e(TAG, "file.setLastModified（）成功！");
-            }
             lastUsageDates.put(file, currentTime);
 
             return file;
@@ -653,9 +645,6 @@ public class ACache {
             if (files != null) {
                 for (File f : files) {
                     boolean delete = f.delete();
-                    if (delete) {
-                        Log.e(TAG, "删除成功");
-                    }
                 }
             }
         }
