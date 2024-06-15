@@ -34,7 +34,7 @@ import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
  * Created by Fire on 2017/4/8.
  */
 
-public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.ViewHolder> implements View.OnClickListener {
+public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.ViewHolder> {
     private static final String TAG = "PhotoListAdapter";
     private final RequestOptions requestOptions;
     private List<String> list;
@@ -91,10 +91,7 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.photo_item, parent, false);
-        ViewHolder holder = new ViewHolder(view);
-        holder.ivPhotoChecked.setOnClickListener(this);
-        holder.rootView.setOnClickListener(this);
-        return holder;
+        return new ViewHolder(view);
     }
 
     @Override
@@ -114,8 +111,6 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
             } else {
                 holder.ivPhotoChecked.setImageResource(R.drawable.svg_compose_photo_preview_default);
             }
-            holder.ivPhotoChecked.setTag(position);
-            holder.rootView.setTag(position);
         }
     }
 
@@ -125,25 +120,27 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
         return list.size();
     }
 
-    @Override
-    public void onClick(View v) {
-        if (listener != null) {
-            listener.onRecyclerViewItemClick(v, (int) v.getTag());
-        }
-    }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
-        private View rootView;
+    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private SquareImageView ivPhotoThumb;
         private ImageView ivPhotoChecked;
         private ImageView ivGifImage;
 
         ViewHolder(View view) {
             super(view);
-            rootView = view;
             ivPhotoThumb = view.findViewById(R.id.iv_photo_thumb);
             ivPhotoChecked = view.findViewById(R.id.iv_photo_checked);
             ivGifImage = view.findViewById(R.id.iv_gif_image);
+            ivPhotoChecked.setOnClickListener(this);
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            int position = getAdapterPosition();
+            if (listener != null && position != RecyclerView.NO_POSITION) {
+                listener.onRecyclerViewItemClick(v, position);
+            }
         }
     }
 
