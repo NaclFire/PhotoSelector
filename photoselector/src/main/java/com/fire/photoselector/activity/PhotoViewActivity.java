@@ -1,5 +1,10 @@
 package com.fire.photoselector.activity;
 
+import static com.fire.photoselector.models.PhotoMessage.PHOTOS_LIST_TRANSFER;
+import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
+import static com.fire.photoselector.models.PhotoSelectorSetting.LAST_MODIFIED_LIST;
+import static com.fire.photoselector.models.PhotoSelectorSetting.MAX_PHOTO_SUM;
+
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -14,6 +19,10 @@ import android.view.animation.AnimationUtils;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager.widget.ViewPager;
+
 import com.fire.photoselector.R;
 import com.fire.photoselector.adapter.PhotoViewAdapter;
 import com.fire.photoselector.databinding.ActivityPhotoViewBinding;
@@ -23,15 +32,6 @@ import com.fire.photoselector.utils.FileUtils;
 import com.fire.photoselector.utils.ScreenUtil;
 
 import java.util.ArrayList;
-
-import static com.fire.photoselector.models.PhotoMessage.PHOTOS_LIST_TRANSFER;
-import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
-import static com.fire.photoselector.models.PhotoSelectorSetting.LAST_MODIFIED_LIST;
-import static com.fire.photoselector.models.PhotoSelectorSetting.MAX_PHOTO_SUM;
-
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.viewpager.widget.ViewPager;
 
 /**
  * Created by Fire on 2017/4/11.
@@ -51,6 +51,7 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
         super.onCreate(savedInstanceState);
         binding = ActivityPhotoViewBinding.inflate(LayoutInflater.from(this));
         setContentView(binding.getRoot());
+        overridePendingTransition(R.anim.slide_in_bottom, 0);
         fullScreen();
         binding.ivSelectCancel.setOnClickListener(this);
         binding.btSelectOk.setOnClickListener(this);
@@ -242,5 +243,11 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
         window.setStatusBarColor(Color.TRANSPARENT);
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) binding.rlPhotoViewButton.getLayoutParams();
         layoutParams.height = ScreenUtil.dp2px(this, 45) + PhotoSelectorSetting.STATUS_BAR_HEIGHT;
+    }
+    @Override
+    public void finish() {
+        super.finish();
+        // 设置退出动画（可选）
+        overridePendingTransition(0, R.anim.slide_out_top);
     }
 }

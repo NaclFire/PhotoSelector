@@ -1,5 +1,14 @@
 package com.fire.photoselector.activity;
 
+import static com.fire.photoselector.models.PhotoMessage.PHOTOS_LIST_TRANSFER;
+import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
+import static com.fire.photoselector.models.PhotoSelectorSetting.COLUMN_COUNT;
+import static com.fire.photoselector.models.PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE;
+import static com.fire.photoselector.models.PhotoSelectorSetting.ITEM_SIZE;
+import static com.fire.photoselector.models.PhotoSelectorSetting.LAST_MODIFIED_LIST;
+import static com.fire.photoselector.models.PhotoSelectorSetting.MAX_PHOTO_SUM;
+import static com.fire.photoselector.models.PhotoSelectorSetting.SELECTED_ORIGINAL_IMAGE;
+
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
@@ -17,6 +26,12 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.fire.photoselector.R;
@@ -39,21 +54,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static com.fire.photoselector.models.PhotoMessage.PHOTOS_LIST_TRANSFER;
-import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
-import static com.fire.photoselector.models.PhotoSelectorSetting.COLUMN_COUNT;
-import static com.fire.photoselector.models.PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE;
-import static com.fire.photoselector.models.PhotoSelectorSetting.ITEM_SIZE;
-import static com.fire.photoselector.models.PhotoSelectorSetting.LAST_MODIFIED_LIST;
-import static com.fire.photoselector.models.PhotoSelectorSetting.MAX_PHOTO_SUM;
-import static com.fire.photoselector.models.PhotoSelectorSetting.SELECTED_ORIGINAL_IMAGE;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * Created by Fire on 2017/4/8.
@@ -117,6 +117,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         super.onCreate(savedInstanceState);
         binding = ActivityPhotoSelectorBinding.inflate(LayoutInflater.from(this));
         setContentView(binding.getRoot());
+        overridePendingTransition(R.anim.slide_in_bottom, 0);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getWindow().setStatusBarColor(getColor(R.color.textWriteColor));
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
@@ -429,5 +430,11 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
                     break;
             }
         }
+    }
+    @Override
+    public void finish() {
+        super.finish();
+        // 设置退出动画（可选）
+        overridePendingTransition(0, R.anim.slide_out_top);
     }
 }
