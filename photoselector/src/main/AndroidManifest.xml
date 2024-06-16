@@ -3,9 +3,9 @@
     package="com.fire.photoselector">
 
     <application android:label="@string/app_name">
-<!--        <meta-data-->
-<!--            android:name="com.fire.photoselector.models.MyGlideModule"-->
-<!--            android:value="GlideModule" />-->
+        <!--        <meta-data-->
+        <!--            android:name="com.fire.photoselector.models.MyGlideModule"-->
+        <!--            android:value="GlideModule" />-->
 
         <activity android:name=".activity.PhotoSelectorActivity" />
         <activity

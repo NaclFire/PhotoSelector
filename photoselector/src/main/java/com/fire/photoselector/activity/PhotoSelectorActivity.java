@@ -18,6 +18,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -117,7 +118,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         super.onCreate(savedInstanceState);
         binding = ActivityPhotoSelectorBinding.inflate(LayoutInflater.from(this));
         setContentView(binding.getRoot());
-        overridePendingTransition(R.anim.slide_in_bottom, 0);
+        overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_no);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getWindow().setStatusBarColor(getColor(R.color.textWriteColor));
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
@@ -177,8 +178,8 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
                 currentPhotoFolder = ACache.get(PhotoSelectorActivity.this).getList("photo");
                 if (currentPhotoFolder != null) {
                     sendNotifyMsg(MSG_REFRESH_PHOTO_ADAPTER, -1);
+                    SystemClock.sleep(2000);
                 }
-//                SystemClock.sleep(1000);
                 Uri imageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
                 String sortOrder = MediaStore.Images.Media.DATE_TAKEN + " DESC";
                 ContentResolver cr = getContentResolver();
@@ -431,10 +432,10 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
             }
         }
     }
+
     @Override
     public void finish() {
         super.finish();
-        // 设置退出动画（可选）
-        overridePendingTransition(0, R.anim.slide_out_top);
+        overridePendingTransition(R.anim.slide_no, R.anim.slide_out_bottom);
     }
 }

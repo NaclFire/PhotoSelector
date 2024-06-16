@@ -51,7 +51,7 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
         super.onCreate(savedInstanceState);
         binding = ActivityPhotoViewBinding.inflate(LayoutInflater.from(this));
         setContentView(binding.getRoot());
-        overridePendingTransition(R.anim.slide_in_bottom, 0);
+        overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_no);
         fullScreen();
         binding.ivSelectCancel.setOnClickListener(this);
         binding.btSelectOk.setOnClickListener(this);
@@ -247,7 +247,6 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
     @Override
     public void finish() {
         super.finish();
-        // 设置退出动画（可选）
-        overridePendingTransition(0, R.anim.slide_out_top);
+        overridePendingTransition(R.anim.slide_no, R.anim.slide_out_bottom);
     }
 }
