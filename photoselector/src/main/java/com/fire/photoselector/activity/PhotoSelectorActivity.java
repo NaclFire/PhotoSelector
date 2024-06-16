@@ -86,6 +86,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
     private List<String> currentPhotoFolder;
     private ActivityPhotoSelectorBinding binding;
     private MyHandler handler;
+    private GetImagesThread getImagesThread;
 
     private static class MyHandler extends Handler {
         private WeakReference<PhotoSelectorActivity> reference;
@@ -164,57 +165,68 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         folderListAdapter.setOnRecyclerViewItemClickListener(new OnFolderListClick());
         binding.rvFolderList.setAdapter(folderListAdapter);
         PhotoSelectorSetting.STATUS_BAR_HEIGHT = ScreenUtil.getStatusBarHeight(this);
-        getImages();
+        getImagesThread = new GetImagesThread();
+        getImagesThread.start();
         changeOKButtonStatus();
     }
 
     /**
      * 扫描手机中所有图片
      */
-    private void getImages() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                currentPhotoFolder = ACache.get(PhotoSelectorActivity.this).getList("photo");
-                if (currentPhotoFolder != null) {
-                    sendNotifyMsg(MSG_REFRESH_PHOTO_ADAPTER, -1);
-                    SystemClock.sleep(2000);
-                }
+    private class GetImagesThread extends Thread {
+        private boolean running = true;
+
+        @Override
+        public void run() {
+            currentPhotoFolder = ACache.get(PhotoSelectorActivity.this).getList("photo");
+            if (currentPhotoFolder != null) {
+                sendNotifyMsg(MSG_REFRESH_PHOTO_ADAPTER, -1);
+                SystemClock.sleep(2000);
+            }
+            Cursor cursor = null;
+            if (running) {
                 Uri imageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
                 String sortOrder = MediaStore.Images.Media.DATE_TAKEN + " DESC";
                 ContentResolver cr = getContentResolver();
-                Cursor cursor = cr.query(imageUri, null, null, null, sortOrder);
+                cursor = cr.query(imageUri, null, null, null, sortOrder);
                 if (cursor == null) {
                     return;
                 }
-                while (cursor.moveToNext()) {
-                    //获取图片的路径
-                    String path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
-                    Objects.requireNonNull(photoGroupMap.get(getString(R.string.all_photos))).add(path);
-                    //获取该图片的父路径名
-                    File file = new File(path).getParentFile();
-                    if (file != null) {
-                        String parentName = file.getName();
-                        //根据父路径名将图片放入到mGroupMap中
-                        List<String> key = photoGroupMap.get(parentName);
-                        if (key == null) {
-                            chileList = new ArrayList<>();
-                            chileList.add(path);
-                            photoGroupMap.put(parentName, chileList);
-                        } else {
-                            key.add(path);
-                        }
+            }
+            while (running && cursor.moveToNext()) {
+                //获取图片的路径
+                String path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
+                Objects.requireNonNull(photoGroupMap.get(getString(R.string.all_photos))).add(path);
+                //获取该图片的父路径名
+                File file = new File(path).getParentFile();
+                if (file != null) {
+                    String parentName = file.getName();
+                    //根据父路径名将图片放入到mGroupMap中
+                    List<String> key = photoGroupMap.get(parentName);
+                    if (key == null) {
+                        chileList = new ArrayList<>();
+                        chileList.add(path);
+                        photoGroupMap.put(parentName, chileList);
+                    } else {
+                        key.add(path);
                     }
                 }
-                //扫描图片完成
+            }
+            //扫描图片完成
+            if (cursor != null)
                 cursor.close();
+            if (running) {
                 photoFolders.addAll(subGroupOfImage(photoGroupMap));
                 currentPhotoFolder = photoGroupMap.get(getString(R.string.all_photos));
                 ACache.get(PhotoSelectorActivity.this).put("photo", photoGroupMap.get(getString(R.string.all_photos)));
                 sendNotifyMsg(MSG_REFRESH_FOLDER_ADAPTER, -1);
                 sendNotifyMsg(MSG_REFRESH_PHOTO_ADAPTER, -1);
             }
-        }).start();
+        }
+
+        public void stopThread() {
+            running = false;
+        }
     }
 
     private List<ImageFolderBean> subGroupOfImage(ConcurrentHashMap<String, List<String>> mGroupMap) {
@@ -253,7 +265,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
                 ArrayList<String> image = new ArrayList<>(SELECTED_PHOTOS);
                 Intent intent = new Intent();
                 intent.putExtra(LAST_MODIFIED_LIST, image);
-                intent.putExtra(SELECTED_ORIGINAL_IMAGE, PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE);
+                intent.putExtra(SELECTED_ORIGINAL_IMAGE, IS_SELECTED_ORIGINAL_IMAGE);
                 setResult(RESULT_OK, intent);
                 finish();
             }
@@ -265,7 +277,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
                 startActivityForResult(intent, REQUEST_PREVIEW_PHOTO);
             }
         } else if (v == binding.btSelectOriginalImage) {// 选择原图
-            PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE = !PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE;
+            IS_SELECTED_ORIGINAL_IMAGE = !IS_SELECTED_ORIGINAL_IMAGE;
             changeOKButtonStatus();
         } else if (v == binding.vAlpha) {// 点击相册列表外部
             toggleFolderList();
@@ -389,7 +401,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
             binding.btSelectOk.setText(format);
             binding.btPreviewImage.setTextColor(getResources().getColor(R.color.textBlackColor));
         }
-        if (PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE) {
+        if (IS_SELECTED_ORIGINAL_IMAGE) {
             String string = getString(R.string.original_image_with_size);
             String format = String.format(string, FileUtils.getSizeString(FileUtils.getFileLength(SELECTED_PHOTOS)));
             binding.btSelectOriginalImage.setText(format);
@@ -435,6 +447,9 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
 
     @Override
     public void finish() {
+        if (getImagesThread != null) {
+            getImagesThread.stopThread();
+        }
         super.finish();
         overridePendingTransition(R.anim.slide_no, R.anim.slide_out_bottom);
     }
