@@ -8,6 +8,8 @@ import static com.fire.photoselector.models.PhotoSelectorSetting.ITEM_SIZE;
 import static com.fire.photoselector.models.PhotoSelectorSetting.LAST_MODIFIED_LIST;
 import static com.fire.photoselector.models.PhotoSelectorSetting.MAX_PHOTO_SUM;
 import static com.fire.photoselector.models.PhotoSelectorSetting.SELECTED_ORIGINAL_IMAGE;
+import static com.fire.photoselector.models.PhotoSelectorSetting.STATUS_BAR_HEIGHT;
+import static com.fire.photoselector.models.PhotoSelectorSetting.SCREEN_RATIO;
 
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -41,7 +43,6 @@ import com.fire.photoselector.adapter.PhotoListAdapter;
 import com.fire.photoselector.bean.ImageFolderBean;
 import com.fire.photoselector.databinding.ActivityPhotoSelectorBinding;
 import com.fire.photoselector.models.PhotoMessage;
-import com.fire.photoselector.models.PhotoSelectorSetting;
 import com.fire.photoselector.utils.ACache;
 import com.fire.photoselector.utils.FileUtils;
 import com.fire.photoselector.utils.ScreenUtil;
@@ -126,6 +127,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
         }
         ITEM_SIZE = (ScreenUtil.getScreenWidth(this) - ScreenUtil.dp2px(this, COLUMN_COUNT * 2)) / COLUMN_COUNT;
+        STATUS_BAR_HEIGHT = ScreenUtil.getStatusBarHeight(this);
         handler = new MyHandler(this);
         binding.tvSelectCancel.setOnClickListener(this);
         binding.tvAlbumName.setOnClickListener(this);
@@ -136,7 +138,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         binding.vAlpha.setOnClickListener(this);
         Intent intent = getIntent();
         SELECTED_PHOTOS = intent.getStringArrayListExtra(LAST_MODIFIED_LIST);
-        if (SELECTED_PHOTOS == null || SELECTED_PHOTOS.size() == 0) {
+        if (SELECTED_PHOTOS == null || SELECTED_PHOTOS.isEmpty()) {
             IS_SELECTED_ORIGINAL_IMAGE = false;
         }
         List<String> allPhoto = new ArrayList<>();
@@ -164,7 +166,6 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         folderListAdapter = new FolderListAdapter(this, photoFolders);
         folderListAdapter.setOnRecyclerViewItemClickListener(new OnFolderListClick());
         binding.rvFolderList.setAdapter(folderListAdapter);
-        PhotoSelectorSetting.STATUS_BAR_HEIGHT = ScreenUtil.getStatusBarHeight(this);
         getImagesThread = new GetImagesThread();
         getImagesThread.start();
         changeOKButtonStatus();
@@ -235,11 +236,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         for (Map.Entry<String, List<String>> entry : mGroupMap.entrySet()) {
             imageFolderBean = new ImageFolderBean();
             String key = entry.getKey();
-            if (key.equals(getString(R.string.all_photos))) {
-                imageFolderBean.setSelected(true);
-            } else {
-                imageFolderBean.setSelected(false);
-            }
+            imageFolderBean.setSelected(key.equals(getString(R.string.all_photos)));
             value = entry.getValue();
             imageFolderBean.setFolderName(key);
             imageFolderBean.setImageCounts(value.size());
@@ -261,7 +258,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         } else if (v == binding.tvAlbumName || v == binding.ivAlbumArrow) {// 选择相册
             toggleFolderList();
         } else if (v == binding.btSelectOk) {// 确定按钮
-            if (SELECTED_PHOTOS.size() != 0) {
+            if (!SELECTED_PHOTOS.isEmpty()) {
                 ArrayList<String> image = new ArrayList<>(SELECTED_PHOTOS);
                 Intent intent = new Intent();
                 intent.putExtra(LAST_MODIFIED_LIST, image);
@@ -270,7 +267,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
                 finish();
             }
         } else if (v == binding.btPreviewImage) {// 预览照片
-            if (SELECTED_PHOTOS.size() != 0) {
+            if (!SELECTED_PHOTOS.isEmpty()) {
                 Intent intent = new Intent(this, PhotoViewActivity.class);
                 PHOTOS_LIST_TRANSFER.clear();
                 PHOTOS_LIST_TRANSFER.addAll(SELECTED_PHOTOS);
@@ -288,7 +285,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
-            PhotoSelectorSetting.SCREEN_RATIO = (float) binding.vAlpha.getWidth() / binding.vAlpha.getHeight();
+            SCREEN_RATIO = (float) binding.vAlpha.getWidth() / binding.vAlpha.getHeight();
         }
     }
 
@@ -388,7 +385,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
     }
 
     private void changeOKButtonStatus() {
-        if (SELECTED_PHOTOS.size() == 0) {
+        if (SELECTED_PHOTOS.isEmpty()) {
             binding.btSelectOk.setBackgroundResource(R.drawable.button_unclickable);
             binding.btSelectOk.setTextColor(getResources().getColor(R.color.textSecondColor));
             binding.btSelectOk.setText(getString(R.string.ok));

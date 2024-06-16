@@ -2,8 +2,11 @@ package com.fire.photoselector.activity;
 
 import static com.fire.photoselector.models.PhotoMessage.PHOTOS_LIST_TRANSFER;
 import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
+import static com.fire.photoselector.models.PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE;
 import static com.fire.photoselector.models.PhotoSelectorSetting.LAST_MODIFIED_LIST;
 import static com.fire.photoselector.models.PhotoSelectorSetting.MAX_PHOTO_SUM;
+import static com.fire.photoselector.models.PhotoSelectorSetting.SCREEN_RATIO;
+import static com.fire.photoselector.models.PhotoSelectorSetting.STATUS_BAR_HEIGHT;
 
 import android.content.Intent;
 import android.graphics.Color;
@@ -27,7 +30,6 @@ import com.fire.photoselector.R;
 import com.fire.photoselector.adapter.PhotoViewAdapter;
 import com.fire.photoselector.databinding.ActivityPhotoViewBinding;
 import com.fire.photoselector.models.PhotoMessage;
-import com.fire.photoselector.models.PhotoSelectorSetting;
 import com.fire.photoselector.utils.FileUtils;
 import com.fire.photoselector.utils.ScreenUtil;
 
@@ -112,7 +114,7 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
                 startActivityForResult(intent, REQUEST_PREVIEW_PHOTO);
             }
         } else if (v == binding.btSelectOriginalImage) {// 选择原图
-            PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE = !PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE;
+            IS_SELECTED_ORIGINAL_IMAGE = !IS_SELECTED_ORIGINAL_IMAGE;
             changeOKButtonStatus();
         }
     }
@@ -192,7 +194,7 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
             binding.btSelectOk.setText(format);
             binding.btPreviewImage.setTextColor(getResources().getColor(R.color.textBlackColor));
         }
-        if (PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE) {
+        if (IS_SELECTED_ORIGINAL_IMAGE) {
             String string = getString(R.string.original_image_with_size);
             String format = String.format(string, FileUtils.getSizeString(FileUtils.getFileLength(SELECTED_PHOTOS)));
             binding.btSelectOriginalImage.setText(format);
@@ -217,12 +219,12 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
         binding.llPhotoViewButton.setVisibility(visibility == View.VISIBLE ? View.GONE : View.VISIBLE);
         WindowManager.LayoutParams lp = getWindow().getAttributes();
         if (visibility == View.VISIBLE) {//设置为全屏
-            PhotoSelectorSetting.SCREEN_RATIO = (float) binding.vpPhotoView.getWidth() / binding.vpPhotoView.getHeight();
+            SCREEN_RATIO = (float) binding.vpPhotoView.getWidth() / binding.vpPhotoView.getHeight();
             lp.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
             getWindow().setAttributes(lp);
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         } else {//设置为非全屏
-            PhotoSelectorSetting.SCREEN_RATIO = (float) binding.vpPhotoView.getWidth() / binding.vpPhotoView.getHeight();
+            SCREEN_RATIO = (float) binding.vpPhotoView.getWidth() / binding.vpPhotoView.getHeight();
             lp.flags &= (~WindowManager.LayoutParams.FLAG_FULLSCREEN);
             getWindow().setAttributes(lp);
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
@@ -242,8 +244,9 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.setStatusBarColor(Color.TRANSPARENT);
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) binding.rlPhotoViewButton.getLayoutParams();
-        layoutParams.height = ScreenUtil.dp2px(this, 45) + PhotoSelectorSetting.STATUS_BAR_HEIGHT;
+        layoutParams.height = ScreenUtil.dp2px(this, 45) + STATUS_BAR_HEIGHT;
     }
+
     @Override
     public void finish() {
         super.finish();
