@@ -1,10 +1,10 @@
 package com.fire.photoselector.models;
 
 
+import static com.fire.photoselector.models.PhotoSelectorSetting.MAX_PHOTO_SUM;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.fire.photoselector.models.PhotoSelectorSetting.MAX_PHOTO_SUM;
 
 /**
  * Created by Fire on 2017/4/10.

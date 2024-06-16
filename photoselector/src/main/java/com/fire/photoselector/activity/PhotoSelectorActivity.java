@@ -1,5 +1,14 @@
 package com.fire.photoselector.activity;
 
+import static com.fire.photoselector.models.PhotoMessage.PHOTOS_LIST_TRANSFER;
+import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
+import static com.fire.photoselector.models.PhotoSelectorSetting.COLUMN_COUNT;
+import static com.fire.photoselector.models.PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE;
+import static com.fire.photoselector.models.PhotoSelectorSetting.ITEM_SIZE;
+import static com.fire.photoselector.models.PhotoSelectorSetting.LAST_MODIFIED_LIST;
+import static com.fire.photoselector.models.PhotoSelectorSetting.MAX_PHOTO_SUM;
+import static com.fire.photoselector.models.PhotoSelectorSetting.SELECTED_ORIGINAL_IMAGE;
+
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
@@ -9,6 +18,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -44,15 +54,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static com.fire.photoselector.models.PhotoMessage.PHOTOS_LIST_TRANSFER;
-import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
-import static com.fire.photoselector.models.PhotoSelectorSetting.COLUMN_COUNT;
-import static com.fire.photoselector.models.PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE;
-import static com.fire.photoselector.models.PhotoSelectorSetting.ITEM_SIZE;
-import static com.fire.photoselector.models.PhotoSelectorSetting.LAST_MODIFIED_LIST;
-import static com.fire.photoselector.models.PhotoSelectorSetting.MAX_PHOTO_SUM;
-import static com.fire.photoselector.models.PhotoSelectorSetting.SELECTED_ORIGINAL_IMAGE;
 
 /**
  * Created by Fire on 2017/4/8.
@@ -116,6 +117,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         super.onCreate(savedInstanceState);
         binding = ActivityPhotoSelectorBinding.inflate(LayoutInflater.from(this));
         setContentView(binding.getRoot());
+        overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_no);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getWindow().setStatusBarColor(getColor(R.color.textWriteColor));
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
@@ -132,7 +134,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         binding.vAlpha.setOnClickListener(this);
         Intent intent = getIntent();
         SELECTED_PHOTOS = intent.getStringArrayListExtra(LAST_MODIFIED_LIST);
-        if (SELECTED_PHOTOS == null || SELECTED_PHOTOS.size() == 0) {
+        if (SELECTED_PHOTOS == null || SELECTED_PHOTOS.isEmpty()) {
             IS_SELECTED_ORIGINAL_IMAGE = false;
         }
         List<String> allPhoto = new ArrayList<>();
@@ -143,12 +145,9 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         } else {
             binding.rvPhotoList.setLayoutManager(new PreloadGridLayoutManager(this, COLUMN_COUNT));
         }
-        RecyclerView.RecycledViewPool viewPool = new RecyclerView.RecycledViewPool();
-        viewPool.setMaxRecycledViews(0, 200);
         binding.rvPhotoList.setItemViewCacheSize(200);
         binding.rvPhotoList.setDrawingCacheEnabled(true);
         binding.rvPhotoList.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
-        binding.rvPhotoList.setRecycledViewPool(viewPool);
         binding.rvPhotoList.setHasFixedSize(true);
         binding.rvPhotoList.setAdapter(photoListAdapter);
 //        binding.rvPhotoList.addOnScrollListener(new MyOnScrollListener());
@@ -175,8 +174,8 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
                 currentPhotoFolder = ACache.get(PhotoSelectorActivity.this).getList("photo");
                 if (currentPhotoFolder != null) {
                     sendNotifyMsg(MSG_REFRESH_PHOTO_ADAPTER, -1);
+                    SystemClock.sleep(2000);
                 }
-//                SystemClock.sleep(1000);
                 Uri imageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
                 String sortOrder = MediaStore.Images.Media.DATE_TAKEN + " DESC";
                 ContentResolver cr = getContentResolver();
@@ -428,5 +427,11 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
                     break;
             }
         }
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        overridePendingTransition(R.anim.slide_no, R.anim.slide_out_bottom);
     }
 }

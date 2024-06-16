@@ -1,5 +1,7 @@
 package com.fire.photoselector.adapter;
 
+import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
+
 import android.app.Activity;
 import android.content.Context;
 import android.support.v7.util.DiffUtil;
@@ -23,8 +25,6 @@ import com.fire.photoselector.view.SquareImageView;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-
-import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
 
 
 /**
