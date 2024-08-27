@@ -62,7 +62,7 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <android.support.v7.widget.RecyclerView
+            <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_photo_list"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
@@ -112,7 +112,7 @@
             android:background="#80000000"
             android:visibility="invisible" />
 
-        <android.support.v7.widget.RecyclerView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_folder_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

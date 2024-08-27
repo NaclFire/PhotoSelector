@@ -22,11 +22,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -34,6 +29,12 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.fire.photoselector.R;
@@ -148,9 +149,12 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         } else {
             binding.rvPhotoList.setLayoutManager(new PreloadGridLayoutManager(this, COLUMN_COUNT));
         }
+        RecyclerView.RecycledViewPool viewPool = new RecyclerView.RecycledViewPool();
+        viewPool.setMaxRecycledViews(0, 200);
         binding.rvPhotoList.setItemViewCacheSize(200);
         binding.rvPhotoList.setDrawingCacheEnabled(true);
         binding.rvPhotoList.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
+        binding.rvPhotoList.setRecycledViewPool(viewPool);
         binding.rvPhotoList.setHasFixedSize(true);
         binding.rvPhotoList.setAdapter(photoListAdapter);
 //        binding.rvPhotoList.addOnScrollListener(new MyOnScrollListener());
@@ -166,7 +170,6 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         getImagesThread.start();
         changeOKButtonStatus();
     }
-
 
     /**
      * 扫描手机中所有图片
