@@ -21,38 +21,6 @@ allprojects {
         jcenter()
     }
 }
-//maven-publish 插件的配置
-// publishing 用于定义项目的发布相关配置
-publishing {
-    // 配置maven 仓库
-    repositories { RepositoryHandler handler ->
-        handler.mavenLocal()  // 发布到默认的 本地maven 仓库 ，路径： USER_HOME/.m2/repository/  或 setting.xml中配置的路径
-    }
-
-    // publications 用于定义发布任务的配置块
-    publications {
-        // 这个 aarAndroid 可以随便填，只是一个任务名字而已(如果有多渠道，整段在下面多复制一份)
-        // MavenPublication必须有，这个是调用的任务类
-        aarAndroid(MavenPublication) {
-            // 这里头是artifacts的配置信息，不填会采用默认的
-//            groupId = "${groupN}"
-//            artifactId = "${artifactIdN}"
-//            version = "${versionN}"
-
-            // 增加上传源码的 task
-            artifact sourceJar
-            // 必须有这个 否则不会上传AAR包  将bundleReleaseAar任务的单个输出文件作为发布的AAR文件。这样，该AAR文件就会成为 MavenPublication 的 artifact 并进行发布
-            afterEvaluate { artifact(tasks.getByName("bundleReleaseAar")) }
-        }
-    }
-}
-
-// 增加上传源码的task
-task sourceJar(type: Jar) {
-    from android.sourceSets.main.java.srcDirs
-    archiveClassifier = "sources"
-}
-
 
 task clean(type: Delete) {
     delete rootProject.buildDir
