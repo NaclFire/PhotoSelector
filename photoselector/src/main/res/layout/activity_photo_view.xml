@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/vp_photo_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <RelativeLayout
+        android:id="@+id/rl_photo_view_button"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:background="@color/albumColor">
+
+        <ImageView
+            android:id="@+id/iv_select_cancel"
+            android:layout_width="40dp"
+            android:layout_height="45dp"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="8dp"
+            android:padding="5dp"
+            android:src="@drawable/back_button_selector" />
+
+        <Button
+            android:id="@+id/bt_select_ok"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8.5dp"
+            android:background="@drawable/button_unclickable"
+            android:minWidth="70dp"
+            android:text="@string/ok"
+            android:textColor="@color/textSecondColor"
+            android:textSize="15sp" />
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/iv_photo_selected"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/rl_photo_view_button"
+        android:layout_alignParentEnd="true"
+        android:padding="16dp"
+        android:src="@drawable/svg_compose_photo_preview_checked" />
+
+    <LinearLayout
+        android:id="@+id/ll_photo_view_button"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:background="@color/albumColor"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/bt_preview_image"
+            android:layout_width="50dp"
+            android:layout_height="25dp"
+            android:layout_marginStart="16dp"
+            android:background="@drawable/button_unclickable"
+            android:text="@string/preview"
+            android:textColor="@color/textSecondColor"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/bt_select_original_image"
+            android:layout_width="wrap_content"
+            android:layout_height="25dp"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/button_unclickable"
+            android:drawableStart="@drawable/svg_choose_original_image_default"
+            android:drawablePadding="5dp"
+            android:gravity="center_vertical"
+            android:minWidth="65dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:text="@string/full_image"
+            android:textColor="@color/textBlackColor"
+            android:textSize="14sp" />
+    </LinearLayout>
+</RelativeLayout>

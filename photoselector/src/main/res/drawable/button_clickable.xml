@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="90"
+        android:endColor="#0E000000"
+        android:startColor="#05000000" /><!--背景颜色渐变 angle为渐变角度-->
+    <solid android:color="@color/buttonColor" /><!-- 背景填充颜色 -->
+    <stroke
+        android:width="2px"
+        android:color="#FFFFFF" /><!-- 描边，边框宽度、颜色 -->
+    <corners android:radius="6dp" /><!-- 边角圆弧的半径 -->
+</shape>

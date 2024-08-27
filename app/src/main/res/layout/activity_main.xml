@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:layout_weight="1"
+            app:errorTextAppearance="@style/ErrorAppearance"
+            app:hintTextAppearance="@style/HintAppearance">
+
+            <EditText
+                android:id="@+id/tv_select_sum"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="可选照片数"
+                android:inputType="number"
+                android:maxLength="2"
+                android:text="9"
+                android:textColor="#000"
+                android:textSize="18sp" />
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:layout_weight="1"
+            app:errorTextAppearance="@style/ErrorAppearance"
+            app:hintTextAppearance="@style/HintAppearance">
+
+            <EditText
+                android:id="@+id/tv_column_count"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="照片列数"
+                android:inputType="number"
+                android:maxLength="1"
+                android:text="4"
+                android:textColor="#000"
+                android:textSize="18sp" />
+        </android.support.design.widget.TextInputLayout>
+
+        <Button
+            android:id="@+id/bt_select_photo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="选择照片" />
+    </LinearLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</LinearLayout>

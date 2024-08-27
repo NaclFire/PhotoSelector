@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">PhotoSelector</string>
+    <string name="cancel">取消</string>
+    <string name="ok">确定</string>
+    <string name="ok_with_number">确定(%d)</string>
+    <string name="preview">预览</string>
+    <string name="full_image">原图</string>
+    <string name="original_image_with_size">原图(%s)</string>
+    <string name="all_photos">相机胶卷</string>
+    <string name="album_photo_number">(%d)</string>
+    <string name="photo_sum_max">最多只能选择%d张图片</string>
+    <string name="photo_sum_indicator">%1$d/%2$d</string>
+    <string name="get_album_failed">获取相册失败</string>
+</resources>
