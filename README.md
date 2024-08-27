@@ -22,10 +22,10 @@
 
 (2)Module的build.gradle中添加:
 
-
 	dependencies {
 		...
-	    implementation 'com.github.NaclFire:PhotoSelector:1.3'
+	    implementation 'com.github.NaclFire:PhotoSelector:1.5.1'
+	    implementation 'com.github.NaclFire:PhotoSelector:1.5.1X'//AndroidX依赖，与上面二选一
 	}
 
 
