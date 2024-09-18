@@ -96,8 +96,9 @@ public class MainActivity extends AppCompatActivity {
     private void selectPhotos(int sum, int columnCount) {
         PhotoSelectorSetting.MAX_PHOTO_SUM = sum;
         PhotoSelectorSetting.COLUMN_COUNT = columnCount;
-        Intent intent = new Intent(MainActivity.this, PhotoSelectorActivity.class);
-        intent.putExtra(PhotoSelectorSetting.LAST_MODIFIED_LIST, result);
-        startActivityForResult(intent, REQUEST_SELECT_PHOTO);
+        PhotoSelectorSetting.IS_SHOW_SELECTED_ORIGINAL_IMAGE = true;
+        PhotoSelectorSetting.SELECTED_PHOTOS = result;
+        PhotoSelectorActivity.startMe(this, REQUEST_SELECT_PHOTO);
+//        startActivityForResult(new Intent(MainActivity.this, PhotoSelectorActivity.class), REQUEST_SELECT_PHOTO);
     }
 }

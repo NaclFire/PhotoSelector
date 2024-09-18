@@ -1,6 +1,6 @@
 package com.fire.photoselector.adapter;
 
-import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
+import static com.fire.photoselector.models.PhotoSelectorSetting.SELECTED_PHOTOS;
 
 import android.app.Activity;
 import android.content.Context;

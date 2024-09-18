@@ -16,7 +16,7 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
 import com.fire.photoselector.R;
 import com.fire.photoselector.bean.ImageFolderBean;
-import com.fire.photoselector.models.PhotoMessage;
+import com.fire.photoselector.models.PhotoSelectorSetting;
 import com.fire.photoselector.utils.ScreenUtil;
 
 import java.util.List;
@@ -56,7 +56,7 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
     public void onBindViewHolder(ViewHolder holder, int position) {
         List<String> imagePaths = list.get(position).getImagePaths();
         for (String imagePath : imagePaths) {
-            if (PhotoMessage.isPhotoSelected(imagePath)) {
+            if (PhotoSelectorSetting.isPhotoSelected(imagePath)) {
                 holder.ivPhotoFilterChecked.setVisibility(View.VISIBLE);
                 break;
             } else {
