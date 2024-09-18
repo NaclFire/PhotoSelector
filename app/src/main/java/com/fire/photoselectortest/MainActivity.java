@@ -69,8 +69,8 @@ public class MainActivity extends AppCompatActivity {
             case REQUEST_SELECT_PHOTO:
                 if (resultCode == RESULT_OK) {
                     result = data.getStringArrayListExtra(PhotoSelectorSetting.LAST_MODIFIED_LIST);
-                    boolean isSelectedFullImage = data.getBooleanExtra(PhotoSelectorSetting.SELECTED_ORIGINAL_IMAGE, false);
-                    photoRecyclerViewAdapter.setList(result, isSelectedFullImage);
+                    boolean isSelectedOriginImage = data.getBooleanExtra(PhotoSelectorSetting.SELECTED_ORIGINAL_IMAGE, false);
+                    photoRecyclerViewAdapter.setList(result, isSelectedOriginImage);
                 }
                 break;
         }
@@ -95,8 +95,10 @@ public class MainActivity extends AppCompatActivity {
     private void selectPhotos(int sum, int columnCount) {
         PhotoSelectorSetting.MAX_PHOTO_SUM = sum;
         PhotoSelectorSetting.COLUMN_COUNT = columnCount;
-        Intent intent = new Intent(MainActivity.this, PhotoSelectorActivity.class);
-        intent.putExtra(PhotoSelectorSetting.LAST_MODIFIED_LIST, result);
-        startActivityForResult(intent, REQUEST_SELECT_PHOTO);
+        PhotoSelectorSetting.IS_SHOW_SELECTED_ORIGINAL_IMAGE = false;
+        PhotoSelectorSetting.SELECTED_PHOTOS = result;
+        PhotoSelectorActivity.startMe(this, REQUEST_SELECT_PHOTO);
+//        Intent intent = new Intent(MainActivity.this, PhotoSelectorActivity.class);
+//        startActivityForResult(new Intent(MainActivity.this, PhotoSelectorActivity.class), REQUEST_SELECT_PHOTO);
     }
 }

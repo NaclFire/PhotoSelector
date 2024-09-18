@@ -1,11 +1,12 @@
 package com.fire.photoselector.activity;
 
-import static com.fire.photoselector.models.PhotoMessage.PHOTOS_LIST_TRANSFER;
-import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
 import static com.fire.photoselector.models.PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE;
+import static com.fire.photoselector.models.PhotoSelectorSetting.IS_SHOW_SELECTED_ORIGINAL_IMAGE;
 import static com.fire.photoselector.models.PhotoSelectorSetting.LAST_MODIFIED_LIST;
 import static com.fire.photoselector.models.PhotoSelectorSetting.MAX_PHOTO_SUM;
+import static com.fire.photoselector.models.PhotoSelectorSetting.PHOTOS_LIST_TRANSFER;
 import static com.fire.photoselector.models.PhotoSelectorSetting.SCREEN_RATIO;
+import static com.fire.photoselector.models.PhotoSelectorSetting.SELECTED_PHOTOS;
 import static com.fire.photoselector.models.PhotoSelectorSetting.STATUS_BAR_HEIGHT;
 
 import android.content.Intent;
@@ -28,7 +29,7 @@ import android.widget.Toast;
 import com.fire.photoselector.R;
 import com.fire.photoselector.adapter.PhotoViewAdapter;
 import com.fire.photoselector.databinding.ActivityPhotoViewBinding;
-import com.fire.photoselector.models.PhotoMessage;
+import com.fire.photoselector.models.PhotoSelectorSetting;
 import com.fire.photoselector.utils.FileUtils;
 import com.fire.photoselector.utils.ScreenUtil;
 
@@ -69,6 +70,7 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
         binding.vpPhotoView.setAdapter(photoViewAdapter);
         binding.vpPhotoView.setCurrentItem(index, false);
         binding.vpPhotoView.addOnPageChangeListener(new PageChangeListener());
+        binding.btSelectOriginalImage.setVisibility(IS_SHOW_SELECTED_ORIGINAL_IMAGE ? View.VISIBLE : View.GONE);
         changePhotoSelectStatus(binding.vpPhotoView.getCurrentItem());
         changeOKButtonStatus();
     }
@@ -89,7 +91,7 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
             // 当前ViewPager页面脚标
             int position = binding.vpPhotoView.getCurrentItem();
             // 添加/删除当前页面照片
-            boolean result = PhotoMessage.togglePhotoSelected(PHOTOS_LIST_TRANSFER.get(position));
+            boolean result = PhotoSelectorSetting.togglePhotoSelected(PHOTOS_LIST_TRANSFER.get(position));
             if (result) {
                 // 添加/删除成功
                 changePhotoSelectStatus(position);
@@ -168,7 +170,7 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
      * @param position
      */
     private void changePhotoSelectStatus(int position) {
-        if (PhotoMessage.isPhotoSelected(PHOTOS_LIST_TRANSFER.get(position))) {
+        if (PhotoSelectorSetting.isPhotoSelected(PHOTOS_LIST_TRANSFER.get(position))) {
             binding.ivPhotoSelected.setImageResource(R.drawable.svg_compose_photo_preview_checked);
         } else {
             binding.ivPhotoSelected.setImageResource(R.drawable.svg_compose_photo_preview_default);

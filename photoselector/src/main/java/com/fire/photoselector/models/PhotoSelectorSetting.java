@@ -1,10 +1,15 @@
 package com.fire.photoselector.models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Fire on 2017/4/10.
  */
 
 public class PhotoSelectorSetting {
+    public static List<String> SELECTED_PHOTOS = new ArrayList<>();
+    public static ArrayList<String> PHOTOS_LIST_TRANSFER = new ArrayList<>();
     /**
      * 最多可选照片数量
      */
@@ -13,6 +18,10 @@ public class PhotoSelectorSetting {
      * 照片列表列数
      */
     public static int COLUMN_COUNT = 4;
+    /**
+     * 是否显示选择原图按钮
+     */
+    public static boolean IS_SHOW_SELECTED_ORIGINAL_IMAGE = true;
     public static final String LAST_MODIFIED_LIST = "last_modified_list";
     /**
      * PhotoView宽高比例,用于判断图片高度是否超出屏幕范围
@@ -31,4 +40,22 @@ public class PhotoSelectorSetting {
      */
     public static boolean IS_SELECTED_ORIGINAL_IMAGE = false;
     public static int ITEM_SIZE;
+
+    public static boolean isPhotoSelected(String path) {
+        return SELECTED_PHOTOS.contains(path);
+    }
+
+    public static boolean togglePhotoSelected(String path) {
+        if (SELECTED_PHOTOS.contains(path)) {
+            SELECTED_PHOTOS.remove(path);
+            return true;
+        } else {
+            if (SELECTED_PHOTOS.size() == MAX_PHOTO_SUM) {
+                return false;
+            } else {
+                SELECTED_PHOTOS.add(path);
+                return true;
+            }
+        }
+    }
 }

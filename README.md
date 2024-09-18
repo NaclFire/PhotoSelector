@@ -24,8 +24,8 @@
 
 	dependencies {
 		...
-	    implementation 'com.github.NaclFire:PhotoSelector:1.5.1'
-	    implementation 'com.github.NaclFire:PhotoSelector:1.5.1X'//AndroidX依赖，与上面二选一
+	    implementation 'com.github.NaclFire:PhotoSelector:1.5.2'
+	    implementation 'com.github.NaclFire:PhotoSelector:1.5.2X'//AndroidX依赖，与上面二选一
 	}
 
 
@@ -41,9 +41,14 @@
         PhotoSelectorSetting.MAX_PHOTO_SUM = sum;
         // 照片列表列数
         PhotoSelectorSetting.COLUMN_COUNT = columnCount;
-        Intent intent = new Intent(MainActivity.this, PhotoSelectorActivity.class);
-        intent.putExtra(PhotoSelectorSetting.LAST_MODIFIED_LIST, result);
-        startActivityForResult(intent, REQUEST_SELECT_PHOTO);
+        // 是否显示原图按钮
+        PhotoSelectorSetting.IS_SHOW_SELECTED_ORIGINAL_IMAGE = false;
+        // 图片list
+        PhotoSelectorSetting.SELECTED_PHOTOS = result;
+        // 启动图片选择activity
+        PhotoSelectorActivity.startMe(this, REQUEST_SELECT_PHOTO);
+        // Intent intent = new Intent(MainActivity.this, PhotoSelectorActivity.class);
+        // startActivityForResult(intent, REQUEST_SELECT_PHOTO);
     }
 
 	在onActivityResult中接收返回集合:
@@ -53,9 +58,9 @@
         switch (requestCode) {
             case REQUEST_SELECT_PHOTO:
                 if (resultCode == RESULT_OK) {
-                    // result为照片绝对路径集合,isSelectedFullImage标识是否选择原图
+                    // result为照片绝对路径集合,isSelectedOriginImage标识是否选择原图
                     result = data.getStringArrayListExtra(PhotoSelectorSetting.LAST_MODIFIED_LIST);
-                    boolean isSelectedFullImage = data.getBooleanExtra(PhotoSelectorSetting.SELECTED_FULL_IMAGE, false);
+                    boolean isSelectedOriginImage = data.getBooleanExtra(PhotoSelectorSetting.SELECTED_ORIGINAL_IMAGE, false);
                     // TODO: 获取照片后的操作
                 }
                 break;

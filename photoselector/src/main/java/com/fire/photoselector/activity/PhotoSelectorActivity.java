@@ -1,16 +1,18 @@
 package com.fire.photoselector.activity;
 
-import static com.fire.photoselector.models.PhotoMessage.PHOTOS_LIST_TRANSFER;
-import static com.fire.photoselector.models.PhotoMessage.SELECTED_PHOTOS;
 import static com.fire.photoselector.models.PhotoSelectorSetting.COLUMN_COUNT;
 import static com.fire.photoselector.models.PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE;
+import static com.fire.photoselector.models.PhotoSelectorSetting.IS_SHOW_SELECTED_ORIGINAL_IMAGE;
 import static com.fire.photoselector.models.PhotoSelectorSetting.ITEM_SIZE;
 import static com.fire.photoselector.models.PhotoSelectorSetting.LAST_MODIFIED_LIST;
 import static com.fire.photoselector.models.PhotoSelectorSetting.MAX_PHOTO_SUM;
-import static com.fire.photoselector.models.PhotoSelectorSetting.SELECTED_ORIGINAL_IMAGE;
-import static com.fire.photoselector.models.PhotoSelectorSetting.STATUS_BAR_HEIGHT;
+import static com.fire.photoselector.models.PhotoSelectorSetting.PHOTOS_LIST_TRANSFER;
 import static com.fire.photoselector.models.PhotoSelectorSetting.SCREEN_RATIO;
+import static com.fire.photoselector.models.PhotoSelectorSetting.SELECTED_ORIGINAL_IMAGE;
+import static com.fire.photoselector.models.PhotoSelectorSetting.SELECTED_PHOTOS;
+import static com.fire.photoselector.models.PhotoSelectorSetting.STATUS_BAR_HEIGHT;
 
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
@@ -41,7 +43,7 @@ import com.fire.photoselector.adapter.FolderListAdapter;
 import com.fire.photoselector.adapter.PhotoListAdapter;
 import com.fire.photoselector.bean.ImageFolderBean;
 import com.fire.photoselector.databinding.ActivityPhotoSelectorBinding;
-import com.fire.photoselector.models.PhotoMessage;
+import com.fire.photoselector.models.PhotoSelectorSetting;
 import com.fire.photoselector.utils.ACache;
 import com.fire.photoselector.utils.FileUtils;
 import com.fire.photoselector.utils.ScreenUtil;
@@ -114,6 +116,10 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         }
     }
 
+    public static void startMe(Activity activity, int requestCode) {
+        activity.startActivityForResult(new Intent(activity, PhotoSelectorActivity.class), requestCode);
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -135,8 +141,6 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         binding.btPreviewImage.setOnClickListener(this);
         binding.btSelectOriginalImage.setOnClickListener(this);
         binding.vAlpha.setOnClickListener(this);
-        Intent intent = getIntent();
-        SELECTED_PHOTOS = intent.getStringArrayListExtra(LAST_MODIFIED_LIST);
         if (SELECTED_PHOTOS == null || SELECTED_PHOTOS.isEmpty()) {
             IS_SELECTED_ORIGINAL_IMAGE = false;
         }
@@ -162,6 +166,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         folderListAdapter = new FolderListAdapter(this, photoFolders);
         folderListAdapter.setOnRecyclerViewItemClickListener(new OnFolderListClick());
         binding.rvFolderList.setAdapter(folderListAdapter);
+        binding.btSelectOriginalImage.setVisibility(IS_SHOW_SELECTED_ORIGINAL_IMAGE ? View.VISIBLE : View.GONE);
         getImagesThread = new GetImagesThread();
         getImagesThread.start();
         changeOKButtonStatus();
@@ -311,7 +316,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         @Override
         public void onRecyclerViewItemClick(View v, int position) {
             if (v.getId() == R.id.iv_photo_checked) {
-                boolean photoSelected = PhotoMessage.togglePhotoSelected(currentPhotoFolder.get(position));
+                boolean photoSelected = PhotoSelectorSetting.togglePhotoSelected(currentPhotoFolder.get(position));
                 if (photoSelected) {
                     changeOKButtonStatus();
                 } else {
