@@ -4,10 +4,10 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -20,10 +20,9 @@ import com.fire.photoselector.activity.PhotoSelectorActivity;
 import com.fire.photoselector.models.PhotoSelectorSetting;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-
-    private static final int REQUEST_SELECT_PHOTO = 100;
     private static final String TAG = "MainActivity";
     private static final int REQUEST_PERMISSION_CODE = 1000;
     private ArrayList<String> result = new ArrayList<>();
@@ -63,20 +62,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode) {
-            case REQUEST_SELECT_PHOTO:
-                if (resultCode == RESULT_OK) {
-                    result = data.getStringArrayListExtra(PhotoSelectorSetting.LAST_MODIFIED_LIST);
-                    boolean isSelectedOriginImage = data.getBooleanExtra(PhotoSelectorSetting.SELECTED_ORIGINAL_IMAGE, false);
-                    photoRecyclerViewAdapter.setList(result, isSelectedOriginImage);
-                }
-                break;
-        }
-    }
-
-    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
@@ -93,12 +78,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void selectPhotos(int sum, int columnCount) {
-        PhotoSelectorSetting.MAX_PHOTO_SUM = sum;
-        PhotoSelectorSetting.COLUMN_COUNT = columnCount;
-        PhotoSelectorSetting.IS_SHOW_SELECTED_ORIGINAL_IMAGE = false;
-        PhotoSelectorSetting.SELECTED_PHOTOS = result;
-        PhotoSelectorActivity.startMe(this, REQUEST_SELECT_PHOTO);
-//        Intent intent = new Intent(MainActivity.this, PhotoSelectorActivity.class);
-//        startActivityForResult(new Intent(MainActivity.this, PhotoSelectorActivity.class), REQUEST_SELECT_PHOTO);
+        new PhotoSelectorActivity.Builder()
+                .setSelectedPhotos(result)
+                .setMaxPhotoSum(sum)
+                .setColumnCount(columnCount)
+                .setShowSelectOrigin(true)
+                .setOnPhotoSelectedCallback(new PhotoSelectorActivity.OnPhotoSelectedCallback() {
+                    @Override
+                    public void onPhotoSelected(List<String> photoList, boolean isSelectOrigin) {
+                        result = (ArrayList<String>) photoList;
+                        photoRecyclerViewAdapter.setList(result, isSelectOrigin);
+                    }
+                })
+                .build(this);
     }
 }
