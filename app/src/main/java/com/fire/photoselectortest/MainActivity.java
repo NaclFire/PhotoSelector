@@ -1,7 +1,6 @@
 package com.fire.photoselectortest;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,9 +17,9 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fire.photoselector.activity.PhotoSelectorActivity;
-import com.fire.photoselector.models.PhotoSelectorSetting;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -64,20 +63,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode) {
-            case REQUEST_SELECT_PHOTO:
-                if (resultCode == RESULT_OK) {
-                    result = data.getStringArrayListExtra(PhotoSelectorSetting.LAST_MODIFIED_LIST);
-                    boolean isSelectedFullImage = data.getBooleanExtra(PhotoSelectorSetting.SELECTED_ORIGINAL_IMAGE, false);
-                    photoRecyclerViewAdapter.setList(result, isSelectedFullImage);
-                }
-                break;
-        }
-    }
-
-    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
@@ -94,11 +79,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void selectPhotos(int sum, int columnCount) {
-        PhotoSelectorSetting.MAX_PHOTO_SUM = sum;
-        PhotoSelectorSetting.COLUMN_COUNT = columnCount;
-        PhotoSelectorSetting.IS_SHOW_SELECTED_ORIGINAL_IMAGE = true;
-        PhotoSelectorSetting.SELECTED_PHOTOS = result;
-        PhotoSelectorActivity.startMe(this, REQUEST_SELECT_PHOTO);
-//        startActivityForResult(new Intent(MainActivity.this, PhotoSelectorActivity.class), REQUEST_SELECT_PHOTO);
+        new PhotoSelectorActivity.Builder()
+                .setSelectedPhotos(result)
+                .setMaxPhotoSum(sum)
+                .setColumnCount(columnCount)
+                .setShowSelectOrigin(true)
+                .setOnPhotoSelectedCallback(new PhotoSelectorActivity.OnPhotoSelectedCallback() {
+                    @Override
+                    public void onPhotoSelected(List<String> photoList, boolean isSelectOrigin) {
+                        result = (ArrayList<String>) photoList;
+                        photoRecyclerViewAdapter.setList(result, isSelectOrigin);
+                    }
+                })
+                .build(this);
     }
 }

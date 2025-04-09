@@ -2,6 +2,7 @@ package com.fire.photoselector.activity;
 
 import static com.fire.photoselector.models.PhotoSelectorSetting.COLUMN_COUNT;
 import static com.fire.photoselector.models.PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE;
+import static com.fire.photoselector.models.PhotoSelectorSetting.IS_SHOW_SELECTED_ORIGINAL_IMAGE;
 import static com.fire.photoselector.models.PhotoSelectorSetting.ITEM_SIZE;
 import static com.fire.photoselector.models.PhotoSelectorSetting.LAST_MODIFIED_LIST;
 import static com.fire.photoselector.models.PhotoSelectorSetting.MAX_PHOTO_SUM;
@@ -13,6 +14,7 @@ import static com.fire.photoselector.models.PhotoSelectorSetting.SCREEN_RATIO;
 
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
@@ -23,6 +25,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -67,6 +70,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
     private static final int REQUEST_PREVIEW_PHOTO = 100;
     private static final int MSG_REFRESH_PHOTO_ADAPTER = 0x01;
     private static final int MSG_REFRESH_FOLDER_ADAPTER = 0x02;
+    private static OnPhotoSelectedCallback onPhotoSelectedCallback;
     /**
      * 保存相册目录名和相册所有照片路径
      */
@@ -116,8 +120,40 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         }
     }
 
-    public static void startMe(Activity activity, int requestsCode) {
-        activity.startActivityForResult(new Intent(activity, PhotoSelectorActivity.class), requestsCode);
+    public static class Builder {
+
+        public Builder setMaxPhotoSum(int maxPhotoSum) {
+            MAX_PHOTO_SUM = maxPhotoSum;
+            return this;
+        }
+
+
+        public Builder setColumnCount(int columnCount) {
+            COLUMN_COUNT = columnCount;
+            return this;
+        }
+
+        public Builder setShowSelectOrigin(boolean showSelectOrigin) {
+            IS_SHOW_SELECTED_ORIGINAL_IMAGE = showSelectOrigin;
+            return this;
+        }
+
+        public Builder setSelectedPhotos(List<String> selectedPhotos) {
+            SELECTED_PHOTOS = selectedPhotos;
+            return this;
+        }
+
+        public Builder setOnPhotoSelectedCallback(OnPhotoSelectedCallback onPhotoSelectedCallback) {
+            PhotoSelectorActivity.onPhotoSelectedCallback = onPhotoSelectedCallback;
+            return this;
+        }
+
+        public void build(Context context) {
+            if (context != null) {
+                Intent intent = new Intent(context, PhotoSelectorActivity.class);
+                context.startActivity(intent);
+            }
+        }
     }
 
     @Override
@@ -263,10 +299,9 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         } else if (v == binding.btSelectOk) {// 确定按钮
             if (!SELECTED_PHOTOS.isEmpty()) {
                 ArrayList<String> image = new ArrayList<>(SELECTED_PHOTOS);
-                Intent intent = new Intent();
-                intent.putExtra(LAST_MODIFIED_LIST, image);
-                intent.putExtra(SELECTED_ORIGINAL_IMAGE, IS_SELECTED_ORIGINAL_IMAGE);
-                setResult(RESULT_OK, intent);
+                if (onPhotoSelectedCallback != null) {
+                    onPhotoSelectedCallback.onPhotoSelected(image, IS_SELECTED_ORIGINAL_IMAGE);
+                }
                 finish();
             }
         } else if (v == binding.btPreviewImage) {// 预览照片
@@ -344,9 +379,9 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
                 if (resultCode == RESULT_OK) {
                     PHOTOS_LIST_TRANSFER.clear();
                     PHOTOS_LIST_TRANSFER.addAll(SELECTED_PHOTOS);
-                    Intent intent = new Intent();
-                    intent.putExtra(LAST_MODIFIED_LIST, PHOTOS_LIST_TRANSFER);
-                    setResult(RESULT_OK, intent);
+                    if (onPhotoSelectedCallback != null) {
+                        onPhotoSelectedCallback.onPhotoSelected(PHOTOS_LIST_TRANSFER, IS_SELECTED_ORIGINAL_IMAGE);
+                    }
                     finish();
                 }
                 photoListAdapter.notifyDataSetChanged();
@@ -418,11 +453,15 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
 
     private void sendNotifyMsg(int what, int index) {
         if (handler != null) {
-            Message message = new Message();
+            Message message = Message.obtain();
             message.what = what;
             message.arg1 = index;
             handler.sendMessage(message);
         }
+    }
+
+    public interface OnPhotoSelectedCallback {
+        void onPhotoSelected(List<String> photoList, boolean isSelectOrigin);
     }
 
     private class MyOnScrollListener extends RecyclerView.OnScrollListener {
@@ -452,5 +491,11 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         }
         super.finish();
         overridePendingTransition(R.anim.slide_no, R.anim.slide_out_bottom);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        onPhotoSelectedCallback = null; // 释放引用
     }
 }
