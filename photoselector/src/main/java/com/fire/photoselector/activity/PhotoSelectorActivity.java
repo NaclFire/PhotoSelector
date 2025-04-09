@@ -65,7 +65,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
     private static final int REQUEST_PREVIEW_PHOTO = 100;
     private static final int MSG_REFRESH_PHOTO_ADAPTER = 0x01;
     private static final int MSG_REFRESH_FOLDER_ADAPTER = 0x02;
-    private static WeakReference<OnPhotoSelectedCallback> callbackWeakReference;
+    private static OnPhotoSelectedCallback onPhotoSelectedCallback;
 
     /**
      * 保存相册目录名和相册所有照片路径
@@ -139,7 +139,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         }
 
         public Builder setOnPhotoSelectedCallback(OnPhotoSelectedCallback onPhotoSelectedCallback) {
-            callbackWeakReference = new WeakReference<>(onPhotoSelectedCallback);
+            PhotoSelectorActivity.onPhotoSelectedCallback = onPhotoSelectedCallback;
             return this;
         }
 
@@ -295,8 +295,8 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         } else if (v == binding.btSelectOk) {// 确定按钮
             if (!SELECTED_PHOTOS.isEmpty()) {
                 ArrayList<String> image = new ArrayList<>(SELECTED_PHOTOS);
-                if (callbackWeakReference.get() != null) {
-                    callbackWeakReference.get().onPhotoSelected(image, IS_SELECTED_ORIGINAL_IMAGE);
+                if (onPhotoSelectedCallback != null) {
+                    onPhotoSelectedCallback.onPhotoSelected(image, IS_SELECTED_ORIGINAL_IMAGE);
                 }
                 finish();
             }
@@ -375,8 +375,8 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
                 if (resultCode == RESULT_OK) {
                     PHOTOS_LIST_TRANSFER.clear();
                     PHOTOS_LIST_TRANSFER.addAll(SELECTED_PHOTOS);
-                    if (callbackWeakReference.get() != null) {
-                        callbackWeakReference.get().onPhotoSelected(PHOTOS_LIST_TRANSFER, IS_SELECTED_ORIGINAL_IMAGE);
+                    if (onPhotoSelectedCallback != null) {
+                        onPhotoSelectedCallback.onPhotoSelected(PHOTOS_LIST_TRANSFER, IS_SELECTED_ORIGINAL_IMAGE);
                     }
                     finish();
                 }
@@ -492,6 +492,6 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        callbackWeakReference = null; // 释放引用
+        onPhotoSelectedCallback = null; // 释放引用
     }
 }
