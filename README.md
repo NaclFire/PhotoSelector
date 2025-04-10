@@ -1,7 +1,7 @@
 ## PhotoSelector 照片选择器
 仿新浪微博照片选择器
 ## 效果图
-![照片选择器](./Demo1.png =640x1400)
+![照片选择器](./Demo1.png){width=640px height=1400px}
 ![照片选择器](./Demo2.png)
 ![照片选择器](./Demo3.png)
 ![照片选择器](./Demo4.gif)
