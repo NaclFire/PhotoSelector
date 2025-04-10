@@ -23,8 +23,8 @@
 
 	dependencies {
 		...
-	    implementation 'com.github.NaclFire:PhotoSelector:1.5.2'
-	    implementation 'com.github.NaclFire:PhotoSelector:1.5.2X'//AndroidX依赖，与上面二选一
+	    implementation 'com.github.NaclFire:PhotoSelector:1.5.3'
+	    implementation 'com.github.NaclFire:PhotoSelector:1.5.3X'//AndroidX依赖，与上面二选一
 	}
 
 
