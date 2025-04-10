@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-
-    private static final int REQUEST_SELECT_PHOTO = 100;
     private static final String TAG = "MainActivity";
     private static final int REQUEST_PERMISSION_CODE = 1000;
     private ArrayList<String> result = new ArrayList<>();
