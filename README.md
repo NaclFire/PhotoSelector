@@ -48,7 +48,7 @@
                 .setOnPhotoSelectedCallback(new PhotoSelectorActivity.OnPhotoSelectedCallback() {
                     @Override
                     public void onPhotoSelected(List<String> photoList, boolean isSelectOrigin) {
-                        // result为照片绝对路径集合,isSelectOrigin
+                        // result为照片绝对路径集合,isSelectOrigin为是否选择原图
                         result = (ArrayList<String>) photoList;
                     }
                 })
