@@ -83,6 +83,10 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
      * 目录列表
      */
     private FolderListAdapter folderListAdapter;
+    /**
+     * 所有的图片文件夹
+     */
+    private List<ImageFolderBean> folderBeanList = new ArrayList<>();
     private List<String> chileList;
     private List<String> currentPhotoFolder;
     private ActivityPhotoSelectorBinding binding;
@@ -134,7 +138,8 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         }
 
         public Builder setSelectedPhotos(List<String> selectedPhotos) {
-            SELECTED_PHOTOS = selectedPhotos;
+            SELECTED_PHOTOS.clear();
+            SELECTED_PHOTOS.addAll(selectedPhotos);
             return this;
         }
 
@@ -266,7 +271,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
     private List<String> value;
 
     private List<ImageFolderBean> subGroupOfImage(ConcurrentHashMap<String, List<String>> mGroupMap) {
-        List<ImageFolderBean> list = new ArrayList<>();
+        folderBeanList.clear();
         ImageFolderBean imageFolderBean;
         for (Map.Entry<String, List<String>> entry : mGroupMap.entrySet()) {
             imageFolderBean = new ImageFolderBean();
@@ -277,18 +282,17 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
             imageFolderBean.setImageCounts(value.size());
             imageFolderBean.setImagePaths(value);
             if (key.equals(getString(R.string.all_photos))) {
-                list.add(0, imageFolderBean);
+                folderBeanList.add(0, imageFolderBean);
             } else {
-                list.add(imageFolderBean);
+                folderBeanList.add(imageFolderBean);
             }
         }
-        return list;
+        return folderBeanList;
     }
 
     @Override
     public void onClick(View v) {
         if (v == binding.tvSelectCancel) {// 取消
-            setResult(RESULT_CANCELED);
             finish();
         } else if (v == binding.tvAlbumName || v == binding.ivAlbumArrow) {// 选择相册
             toggleFolderList();
