@@ -217,55 +217,9 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         folderListAdapter = new FolderListAdapter(this, photoFolders);
         folderListAdapter.setOnRecyclerViewItemClickListener(new OnFolderListClick());
         binding.rvFolderList.setAdapter(folderListAdapter);
+        getImagesThread = new GetImagesThread();
+        getImagesThread.start();
         changeOKButtonStatus();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_PERMISSION_CODE);
-        } else {
-            getImagesThread = new GetImagesThread();
-            getImagesThread.start();
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case REQUEST_PERMISSION_CODE:
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
-                    // 拒绝授权，开弹窗跳询问是否跳设置-权限管理界面
-                    AlertDialog.Builder builder = new AlertDialog.Builder(this)
-                            .setMessage("应用需要文件操作权限，请到设置-权限管理中授权。")
-                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Intent intent = new Intent();
-                                    intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                    intent.addCategory(Intent.CATEGORY_DEFAULT);
-                                    intent.setData(Uri.parse("package:" + getPackageName()));
-                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                                    intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-                                    startActivity(intent);
-                                }
-                            }).setCancelable(false)
-                            .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Toast.makeText(PhotoSelectorActivity.this, "您没有允许权限，此功能不能正常使用", Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                    builder.create().show();
-                } else {
-                    getImagesThread = new GetImagesThread();
-                    getImagesThread.start();
-                }
-                break;
-        }
     }
 
     /**
