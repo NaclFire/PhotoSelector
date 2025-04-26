@@ -1,6 +1,7 @@
 package com.fire.photoselectortest;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +10,7 @@ import android.widget.ImageView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.fire.photoselector.bean.ImagePathBean;
 
 import java.util.List;
 
@@ -18,16 +20,16 @@ import java.util.List;
 
 public class PhotoRecyclerViewAdapter extends RecyclerView.Adapter<PhotoRecyclerViewAdapter.ViewHolder> {
     private Context context;
-    private List<String> list;
+    private List<ImagePathBean> list;
     private boolean isFullImage;
 
-    public PhotoRecyclerViewAdapter(Context context, List<String> list, boolean isFullImage) {
+    public PhotoRecyclerViewAdapter(Context context, List<ImagePathBean> list, boolean isFullImage) {
         this.context = context;
         this.list = list;
         this.isFullImage = isFullImage;
     }
 
-    public void setList(List<String> list, boolean isFullImage) {
+    public void setList(List<ImagePathBean> list, boolean isFullImage) {
         this.list = list;
         this.isFullImage = isFullImage;
         notifyDataSetChanged();
@@ -41,7 +43,7 @@ public class PhotoRecyclerViewAdapter extends RecyclerView.Adapter<PhotoRecycler
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Glide.with(context).load(list.get(position)).into(holder.photo);
+        Glide.with(context).load(list.get(position).getUri()).into(holder.photo);
         holder.fullImage.setVisibility(isFullImage ? View.VISIBLE : View.INVISIBLE);
     }
 

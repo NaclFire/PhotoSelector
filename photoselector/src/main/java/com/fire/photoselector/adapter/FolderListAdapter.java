@@ -16,6 +16,7 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
 import com.fire.photoselector.R;
 import com.fire.photoselector.bean.ImageFolderBean;
+import com.fire.photoselector.bean.ImagePathBean;
 import com.fire.photoselector.models.PhotoSelectorSetting;
 import com.fire.photoselector.utils.ScreenUtil;
 
@@ -54,8 +55,8 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        List<String> imagePaths = list.get(position).getImagePaths();
-        for (String imagePath : imagePaths) {
+        List<ImagePathBean> imagePaths = list.get(position).getImagePaths();
+        for (ImagePathBean imagePath : imagePaths) {
             if (PhotoSelectorSetting.isPhotoSelected(imagePath)) {
                 holder.ivPhotoFilterChecked.setVisibility(View.VISIBLE);
                 break;
@@ -69,8 +70,8 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
             holder.rootView.setBackgroundColor(context.getResources().getColor(R.color.textWriteColor));
         }
         holder.tvAlbumName.setText(list.get(position).getFolderName());
-        if (list.get(position).getImagePaths().size() != 0) {
-            Glide.with(context).asBitmap().load(list.get(position).getImagePaths().get(0)).apply(transform).into(holder.ivFolderThumb);
+        if (!list.get(position).getImagePaths().isEmpty()) {
+            Glide.with(context).asBitmap().load(list.get(position).getImagePaths().get(0).getUri()).apply(transform).into(holder.ivFolderThumb);
         } else {
             holder.ivFolderThumb.setImageResource(R.drawable.shape_none_thumb);
         }

@@ -28,6 +28,7 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.fire.photoselector.R;
 import com.fire.photoselector.adapter.PhotoViewAdapter;
+import com.fire.photoselector.bean.ImagePathBean;
 import com.fire.photoselector.databinding.ActivityPhotoViewBinding;
 import com.fire.photoselector.models.PhotoSelectorSetting;
 import com.fire.photoselector.utils.FileUtils;
@@ -46,7 +47,7 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
     private PhotoViewAdapter photoViewAdapter;
     private ActivityPhotoViewBinding binding;
     private boolean isShowPreview;
-    private ArrayList<String> currentList = new ArrayList<>();
+    private ArrayList<ImagePathBean> currentList = new ArrayList<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -80,7 +81,7 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
             finish();
         } else if (v == binding.btSelectOk) {
             if (SELECTED_PHOTOS.size() != 0) {
-                ArrayList<String> image = new ArrayList<>(SELECTED_PHOTOS);
+                ArrayList<ImagePathBean> image = new ArrayList<>(SELECTED_PHOTOS);
                 Intent intent = new Intent();
                 intent.putExtra(LAST_MODIFIED_LIST, image);
                 setResult(RESULT_OK, intent);

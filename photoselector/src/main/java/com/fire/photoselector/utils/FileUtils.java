@@ -1,5 +1,7 @@
 package com.fire.photoselector.utils;
 
+import com.fire.photoselector.bean.ImagePathBean;
+
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.List;
@@ -15,10 +17,10 @@ public class FileUtils {
         return df.format(f) + "MB";
     }
 
-    public static long getFileLength(List<String> fileList) {
+    public static long getFileLength(List<ImagePathBean> fileList) {
         long size = 0;
-        for (String selectedPhoto : fileList) {
-            size += new File(selectedPhoto).length();
+        for (ImagePathBean selectedPhoto : fileList) {
+            size += new File(selectedPhoto.getPath()).length();
         }
         return size;
     }

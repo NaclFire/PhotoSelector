@@ -20,6 +20,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
 import com.fire.photoselector.R;
+import com.fire.photoselector.bean.ImagePathBean;
 import com.fire.photoselector.models.PhotoSelectorSetting;
 import com.fire.photoselector.view.SquareImageView;
 
@@ -35,11 +36,11 @@ import java.util.concurrent.Executors;
 public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.ViewHolder> {
     private static final String TAG = "PhotoListAdapter";
     private final RequestOptions requestOptions;
-    private List<String> list;
+    private List<ImagePathBean> list;
     private Context context;
     private OnRecyclerViewItemClickListener listener;
 
-    public PhotoListAdapter(Context context, List<String> list) {
+    public PhotoListAdapter(Context context, List<ImagePathBean> list) {
         this.context = context;
         this.list = list;
         requestOptions = new RequestOptions()
@@ -57,12 +58,12 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
         this.listener = listener;
     }
 
-    public void setData(List<String> list) {
+    public void setData(List<ImagePathBean> list) {
         this.list = list;
         notifyDataSetChanged();
     }
 
-    public void updatePhotoList(RecyclerView recyclerView, List<String> list) {
+    public void updatePhotoList(RecyclerView recyclerView, List<ImagePathBean> list) {
         Executor executor = Executors.newSingleThreadExecutor();
         executor.execute(() -> {
             MyDiffCallback diffCallback = new MyDiffCallback(this.list, list);
@@ -96,13 +97,14 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         if (list != null) {
+            ImagePathBean imagePathBean = list.get(position);
             Glide.with(context)
                     .asDrawable()
-                    .load(list.get(position))
+                    .load(list.get(position).getUri())
                     .apply(requestOptions)
                     .transition(DrawableTransitionOptions.withCrossFade())
                     .into(holder.ivPhotoThumb);
-            if (list.get(position).toLowerCase().endsWith("gif")) {
+            if (list.get(position).getPath().toLowerCase().endsWith("gif")) {
                 holder.ivGifImage.setVisibility(View.VISIBLE);
             } else {
                 holder.ivGifImage.setVisibility(View.GONE);
@@ -146,10 +148,10 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
     }
 
     private static class MyDiffCallback extends DiffUtil.Callback {
-        private List<String> oldPhoto;
-        private List<String> newPhoto;
+        private List<ImagePathBean> oldPhoto;
+        private List<ImagePathBean> newPhoto;
 
-        public MyDiffCallback(List<String> oldPhoto, List<String> newPhoto) {
+        public MyDiffCallback(List<ImagePathBean> oldPhoto, List<ImagePathBean> newPhoto) {
             this.oldPhoto = oldPhoto;
             this.newPhoto = newPhoto;
         }

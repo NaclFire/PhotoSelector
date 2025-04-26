@@ -8,6 +8,8 @@ import android.graphics.PixelFormat;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
+import com.fire.photoselector.bean.ImagePathBean;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -86,7 +88,7 @@ public class ACache {
         mCache = new ACacheManager(cacheDir, max_size, max_count);
     }
 
-    public void put(String key, List<String> value) {
+    public void put(String key, List<ImagePathBean> value) {
         File file = mCache.newFile(key);
         try {
             ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
@@ -96,11 +98,21 @@ public class ACache {
         }
     }
 
-    public List<String> getList(String key) {
+    //    public List<String> getList(String key) {
+//        File file = mCache.get(key);
+//        try {
+//            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file));
+//            return (List<String>) inputStream.readObject();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+    public List<ImagePathBean> getList(String key) {
         File file = mCache.get(key);
         try {
             ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file));
-            return (List<String>) inputStream.readObject();
+            return (List<ImagePathBean>) inputStream.readObject();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -630,6 +642,9 @@ public class ACache {
         }
 
         private File newFile(String key) {
+            if (!cacheDir.exists()) {
+                cacheDir.mkdirs();
+            }
             return new File(cacheDir, key.hashCode() + "");
         }
 

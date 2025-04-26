@@ -1,5 +1,7 @@
 package com.fire.photoselector.models;
 
+import com.fire.photoselector.bean.ImagePathBean;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,8 +10,8 @@ import java.util.List;
  */
 
 public class PhotoSelectorSetting {
-    public static List<String> SELECTED_PHOTOS = new ArrayList<>();
-    public static ArrayList<String> PHOTOS_LIST_TRANSFER = new ArrayList<>();
+    public static List<ImagePathBean> SELECTED_PHOTOS = new ArrayList<>();
+    public static ArrayList<ImagePathBean> PHOTOS_LIST_TRANSFER = new ArrayList<>();
     /**
      * 最多可选照片数量
      */
@@ -41,19 +43,19 @@ public class PhotoSelectorSetting {
     public static boolean IS_SELECTED_ORIGINAL_IMAGE = false;
     public static int ITEM_SIZE;
 
-    public static boolean isPhotoSelected(String path) {
+    public static boolean isPhotoSelected(ImagePathBean path) {
         return SELECTED_PHOTOS.contains(path);
     }
 
-    public static boolean togglePhotoSelected(String path) {
-        if (SELECTED_PHOTOS.contains(path)) {
-            SELECTED_PHOTOS.remove(path);
+    public static boolean togglePhotoSelected(ImagePathBean imagePathBean) {
+        if (SELECTED_PHOTOS.contains(imagePathBean)) {
+            SELECTED_PHOTOS.remove(imagePathBean);
             return true;
         } else {
             if (SELECTED_PHOTOS.size() == MAX_PHOTO_SUM) {
                 return false;
             } else {
-                SELECTED_PHOTOS.add(path);
+                SELECTED_PHOTOS.add(imagePathBean);
                 return true;
             }
         }

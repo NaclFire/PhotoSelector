@@ -10,7 +10,7 @@ public class ImageFolderBean {
     /**
      * 文件夹图片路径
      */
-    private List<String> imagePaths;
+    private List<ImagePathBean> imagePaths;
     /**
      * 文件夹名
      */
@@ -24,11 +24,11 @@ public class ImageFolderBean {
      */
     private boolean isSelected;
 
-    public List<String> getImagePaths() {
+    public List<ImagePathBean> getImagePaths() {
         return imagePaths;
     }
 
-    public void setImagePaths(List<String> imagePaths) {
+    public void setImagePaths(List<ImagePathBean> imagePaths) {
         this.imagePaths = imagePaths;
     }
 

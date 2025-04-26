@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fire.photoselector.activity.PhotoSelectorActivity;
+import com.fire.photoselector.bean.ImagePathBean;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +25,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private static final int REQUEST_PERMISSION_CODE = 1000;
-    private ArrayList<String> result = new ArrayList<>();
+    private ArrayList<ImagePathBean> result = new ArrayList<>();
     private Button btSelectPhoto;
     private RecyclerView rvList;
     private PhotoRecyclerViewAdapter photoRecyclerViewAdapter;
@@ -48,32 +49,12 @@ public class MainActivity extends AppCompatActivity {
         btSelectPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
-                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_PERMISSION_CODE);
-                } else {
-                    if (!TextUtils.isEmpty(tvSelectSum.getText().toString().trim()) && !TextUtils.isEmpty(tvColumnCount.getText().toString().trim())) {
-                        selectPhotos(Integer.parseInt(tvSelectSum.getText().toString().trim()), Integer.parseInt(tvColumnCount.getText().toString().trim()));
-                    }
+                if (!TextUtils.isEmpty(tvSelectSum.getText().toString().trim()) && !TextUtils.isEmpty(tvColumnCount.getText().toString().trim())) {
+                    selectPhotos(Integer.parseInt(tvSelectSum.getText().toString().trim()), Integer.parseInt(tvColumnCount.getText().toString().trim()));
                 }
             }
         });
 
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case REQUEST_PERMISSION_CODE:
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
-                    Toast.makeText(this, "未获取权限", Toast.LENGTH_SHORT).show();
-                } else {
-                    if (!TextUtils.isEmpty(tvSelectSum.getText().toString().trim()) && !TextUtils.isEmpty(tvColumnCount.getText().toString().trim())) {
-                        selectPhotos(Integer.parseInt(tvSelectSum.getText().toString().trim()), Integer.parseInt(tvColumnCount.getText().toString().trim()));
-                    }
-                }
-                break;
-        }
     }
 
     private void selectPhotos(int sum, int columnCount) {
@@ -84,8 +65,8 @@ public class MainActivity extends AppCompatActivity {
                 .setShowSelectOrigin(true)
                 .setOnPhotoSelectedCallback(new PhotoSelectorActivity.OnPhotoSelectedCallback() {
                     @Override
-                    public void onPhotoSelected(List<String> photoList, boolean isSelectOrigin) {
-                        result = (ArrayList<String>) photoList;
+                    public void onPhotoSelected(List<ImagePathBean> photoList, boolean isSelectOrigin) {
+                        result = (ArrayList<ImagePathBean>) photoList;
                         photoRecyclerViewAdapter.setList(result, isSelectOrigin);
                     }
                 })

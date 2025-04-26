@@ -10,6 +10,7 @@ import androidx.viewpager.widget.PagerAdapter;
 
 import com.bumptech.glide.Glide;
 import com.fire.photoselector.R;
+import com.fire.photoselector.bean.ImagePathBean;
 import com.fire.photoselector.models.PhotoSelectorSetting;
 import com.fire.photoselector.view.photoview.PhotoView;
 
@@ -23,7 +24,7 @@ import java.util.List;
 public class PhotoViewAdapter extends PagerAdapter {
     private static final String TAG = "PhotoViewAdapter";
     private Context context;
-    private List<String> list;
+    private List<ImagePathBean> list;
     private PhotoView photoView;
     private BitmapFactory.Options options;
     private List<PhotoView> photoViewList = new ArrayList<>();
@@ -33,7 +34,7 @@ public class PhotoViewAdapter extends PagerAdapter {
     private float photoRatio;
     private OnPhotoViewClickListener onPhotoViewClickListener;
 
-    public PhotoViewAdapter(Context context, List<String> list) {
+    public PhotoViewAdapter(Context context, List<ImagePathBean> list) {
         // 只初始化4个PhotoView,防止内存溢出
         for (int x = 0; x < 4; x++) {
             PhotoView pv = new PhotoView(context);
@@ -71,7 +72,7 @@ public class PhotoViewAdapter extends PagerAdapter {
         });
         options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(list.get(position), options);
+        BitmapFactory.decodeFile(list.get(position).getPath(), options);
         photoRatio = (float) options.outWidth / options.outHeight;
         // 如果当前照片宽高比小于PhotoView宽高比,说明图片的高度超出了屏幕范围,需要从图片最上方显示,设置ScaleType.FIT_START
         // 其余情况设置ScaleType.FIT_CENTER
@@ -81,7 +82,7 @@ public class PhotoViewAdapter extends PagerAdapter {
             photoView.setScaleType(ImageView.ScaleType.FIT_CENTER);
         }
         photoView.enable();
-        Glide.with(context).load(list.get(position)).into(photoView);
+        Glide.with(context).load(list.get(position).getUri()).into(photoView);
         container.addView(photoView);
         return photoView;
     }

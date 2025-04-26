@@ -10,9 +10,13 @@ import static com.fire.photoselector.models.PhotoSelectorSetting.SCREEN_RATIO;
 import static com.fire.photoselector.models.PhotoSelectorSetting.SELECTED_PHOTOS;
 import static com.fire.photoselector.models.PhotoSelectorSetting.STATUS_BAR_HEIGHT;
 
+import android.Manifest;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -22,6 +26,9 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.provider.MediaStore;
+import android.provider.Settings;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -32,7 +39,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -41,6 +50,7 @@ import com.fire.photoselector.R;
 import com.fire.photoselector.adapter.FolderListAdapter;
 import com.fire.photoselector.adapter.PhotoListAdapter;
 import com.fire.photoselector.bean.ImageFolderBean;
+import com.fire.photoselector.bean.ImagePathBean;
 import com.fire.photoselector.databinding.ActivityPhotoSelectorBinding;
 import com.fire.photoselector.models.PhotoSelectorSetting;
 import com.fire.photoselector.utils.ACache;
@@ -63,6 +73,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class PhotoSelectorActivity extends AppCompatActivity implements OnClickListener {
     private static final String TAG = "PhotoSelectorActivity";
+    private static final int REQUEST_PERMISSION_CODE = 1000;
     private static final int REQUEST_PREVIEW_PHOTO = 100;
     private static final int MSG_REFRESH_PHOTO_ADAPTER = 0x01;
     private static final int MSG_REFRESH_FOLDER_ADAPTER = 0x02;
@@ -70,7 +81,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
     /**
      * 保存相册目录名和相册所有照片路径
      */
-    private ConcurrentHashMap<String, List<String>> photoGroupMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, List<ImagePathBean>> photoGroupMap = new ConcurrentHashMap<>();
     /**
      * 保存相册目录名
      */
@@ -87,9 +98,9 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
      * 所有图片目录
      */
     private List<ImageFolderBean> imageFolderBeans = new ArrayList<>();
-    private List<String> chileList;
-    private List<String> value;
-    private List<String> currentPhotoFolder;
+    private List<ImagePathBean> chileList;
+    private List<ImagePathBean> value;
+    private List<ImagePathBean> currentPhotoFolder;
     private ActivityPhotoSelectorBinding binding;
     private MyHandler handler;
     private GetImagesThread getImagesThread;
@@ -138,7 +149,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
             return this;
         }
 
-        public Builder setSelectedPhotos(List<String> selectedPhotos) {
+        public Builder setSelectedPhotos(List<ImagePathBean> selectedPhotos) {
             SELECTED_PHOTOS.clear();
             SELECTED_PHOTOS.addAll(selectedPhotos);
             return this;
@@ -181,7 +192,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         if (SELECTED_PHOTOS == null || SELECTED_PHOTOS.isEmpty()) {
             IS_SELECTED_ORIGINAL_IMAGE = false;
         }
-        List<String> allPhoto = new ArrayList<>();
+        List<ImagePathBean> allPhoto = new ArrayList<>();
         photoGroupMap.put(getString(R.string.all_photos), new ArrayList<>());
         photoListAdapter = new PhotoListAdapter(this, allPhoto);
         if (COLUMN_COUNT <= 1) {
@@ -206,9 +217,55 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         folderListAdapter = new FolderListAdapter(this, photoFolders);
         folderListAdapter.setOnRecyclerViewItemClickListener(new OnFolderListClick());
         binding.rvFolderList.setAdapter(folderListAdapter);
-        getImagesThread = new GetImagesThread();
-        getImagesThread.start();
         changeOKButtonStatus();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_PERMISSION_CODE);
+        } else {
+            getImagesThread = new GetImagesThread();
+            getImagesThread.start();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case REQUEST_PERMISSION_CODE:
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+                    // 拒绝授权，开弹窗跳询问是否跳设置-权限管理界面
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                            .setMessage("应用需要文件操作权限，请到设置-权限管理中授权。")
+                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Intent intent = new Intent();
+                                    intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                    intent.addCategory(Intent.CATEGORY_DEFAULT);
+                                    intent.setData(Uri.parse("package:" + getPackageName()));
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+                                    startActivity(intent);
+                                }
+                            }).setCancelable(false)
+                            .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Toast.makeText(PhotoSelectorActivity.this, "您没有允许权限，此功能不能正常使用", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                    builder.create().show();
+                } else {
+                    getImagesThread = new GetImagesThread();
+                    getImagesThread.start();
+                }
+                break;
+        }
     }
 
     /**
@@ -235,21 +292,24 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
                 }
             }
             while (running && cursor.moveToNext()) {
+                int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
+                long id = cursor.getLong(idColumn);
+                Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
                 //获取图片的路径
                 String path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
-                Objects.requireNonNull(photoGroupMap.get(getString(R.string.all_photos))).add(path);
+                Objects.requireNonNull(photoGroupMap.get(getString(R.string.all_photos))).add(new ImagePathBean(path, uri));
                 //获取该图片的父路径名
                 File file = new File(path).getParentFile();
                 if (file != null) {
                     String parentName = file.getName();
                     //根据父路径名将图片放入到mGroupMap中
-                    List<String> key = photoGroupMap.get(parentName);
+                    List<ImagePathBean> key = photoGroupMap.get(parentName);
                     if (key == null) {
                         chileList = new ArrayList<>();
-                        chileList.add(path);
+                        chileList.add(new ImagePathBean(path, uri));
                         photoGroupMap.put(parentName, chileList);
                     } else {
-                        key.add(path);
+                        key.add(new ImagePathBean(path, uri));
                     }
                 }
             }
@@ -270,9 +330,9 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         }
     }
 
-    private List<ImageFolderBean> subGroupOfImage(ConcurrentHashMap<String, List<String>> mGroupMap) {
+    private List<ImageFolderBean> subGroupOfImage(ConcurrentHashMap<String, List<ImagePathBean>> mGroupMap) {
         ImageFolderBean imageFolderBean;
-        for (Map.Entry<String, List<String>> entry : mGroupMap.entrySet()) {
+        for (Map.Entry<String, List<ImagePathBean>> entry : mGroupMap.entrySet()) {
             imageFolderBean = new ImageFolderBean();
             String key = entry.getKey();
             imageFolderBean.setSelected(key.equals(getString(R.string.all_photos)));
@@ -297,7 +357,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
             toggleFolderList();
         } else if (v == binding.btSelectOk) {// 确定按钮
             if (!SELECTED_PHOTOS.isEmpty()) {
-                ArrayList<String> image = new ArrayList<>(SELECTED_PHOTOS);
+                ArrayList<ImagePathBean> image = new ArrayList<>(SELECTED_PHOTOS);
                 if (onPhotoSelectedCallback != null) {
                     onPhotoSelectedCallback.onPhotoSelected(image, IS_SELECTED_ORIGINAL_IMAGE);
                 }
@@ -460,7 +520,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
     }
 
     public interface OnPhotoSelectedCallback {
-        void onPhotoSelected(List<String> photoList, boolean isSelectOrigin);
+        void onPhotoSelected(List<ImagePathBean> photoList, boolean isSelectOrigin);
     }
 
     private class MyOnScrollListener extends RecyclerView.OnScrollListener {
