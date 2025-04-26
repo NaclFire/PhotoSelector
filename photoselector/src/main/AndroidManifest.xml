@@ -7,7 +7,9 @@
         <!--            android:name="com.fire.photoselector.models.MyGlideModule"-->
         <!--            android:value="GlideModule" />-->
 
-        <activity android:name=".activity.PhotoSelectorActivity" />
+        <activity
+            android:name=".activity.PhotoSelectorActivity"
+            android:theme="@style/PreviewTheme" />
         <activity
             android:name=".activity.PhotoViewActivity"
             android:theme="@style/PreviewTheme" />
