@@ -1,12 +1,13 @@
 ## PhotoSelector 照片选择器
 仿新浪微博照片选择器
+再看看一个简单的相机拍照录像的工具：[CameraX](https://github.com/NaclFire/CameraX)
 ## 效果图
 ![照片选择器](./Demo1.png)
 ![照片选择器](./Demo2.png)
 ![照片选择器](./Demo3.png)
 ![照片选择器](./Demo4.gif)
 
-##如何使用
+## 如何使用
 
 1.Gradle添加依赖:
 
@@ -31,6 +32,7 @@ dependencies {
 }
 ```
 2.在AndroidManifest.xml中添加权限:
+
 (1)1.5.3版本：
 
 ```xml
@@ -49,7 +51,7 @@ dependencies {
 3.Java代码:
 
 ```java
-// 1.5.1版本
+// 1.5.3版本
 // 在需要开启照片选择器的地方调用:
 private void selectPhotos(int sum, int columnCount) {
         new PhotoSelectorActivity.Builder()
