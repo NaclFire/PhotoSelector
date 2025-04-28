@@ -312,8 +312,7 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
         } else if (v == binding.btPreviewImage) {// 预览照片
             if (!selectedPhotos.isEmpty()) {
                 Intent intent = new Intent(this, PhotoViewActivity.class);
-                intent.putExtra("selectedPhotos", (Serializable) selectedPhotos);
-                intent.putExtra("currentPhotos", (Serializable) currentPhotoFolder);
+                intent.putExtra("selectedPhotos", PhotoSelectorSetting.save(selectedPhotos));
                 intent.putExtra("isShowPreview", false);
                 startActivityForResult(intent, REQUEST_PREVIEW_PHOTO);
             }
@@ -369,8 +368,8 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
                 photoListAdapter.notifyItemChanged(position);
             } else {
                 Intent intent = new Intent(PhotoSelectorActivity.this, PhotoViewActivity.class);
-                intent.putExtra("selectedPhotos", (Serializable) selectedPhotos);
-                intent.putExtra("currentPhotos", (Serializable) currentPhotoFolder);
+                intent.putExtra("selectedPhotos", PhotoSelectorSetting.save(selectedPhotos));
+                intent.putExtra("currentPhotos", PhotoSelectorSetting.save(currentPhotoFolder));
                 intent.putExtra("Index", position);
                 startActivityForResult(intent, REQUEST_PREVIEW_PHOTO);
             }

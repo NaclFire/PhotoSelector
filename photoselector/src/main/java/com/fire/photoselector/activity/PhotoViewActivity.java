@@ -41,7 +41,6 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
     private PhotoViewAdapter photoViewAdapter;
     private ActivityPhotoViewBinding binding;
     private boolean isShowPreview;
-    //    private List<ImagePathBean> currentList = new ArrayList<>();
     private List<ImagePathBean> selectedPhotos = new ArrayList<>();
     private List<ImagePathBean> currentPhotoFolder = new ArrayList<>();
 
@@ -60,10 +59,14 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
         binding.btSelectOriginalImage.setVisibility(PhotoSelectorSetting.IS_SHOW_SELECTED_ORIGINAL_IMAGE ? View.VISIBLE : View.GONE);
         Intent intent = getIntent();
         int index = intent.getIntExtra("Index", 0);
-        selectedPhotos.addAll((List<ImagePathBean>) intent.getSerializableExtra("selectedPhotos"));
+        String selectedPhotoKey = intent.getStringExtra("selectedPhotos");
+        selectedPhotos.addAll(PhotoSelectorSetting.retrieve(selectedPhotoKey));
+        PhotoSelectorSetting.remove(selectedPhotoKey);
         isShowPreview = intent.getBooleanExtra("isShowPreview", true);
         if (isShowPreview) {
-            currentPhotoFolder.addAll((List<ImagePathBean>) intent.getSerializableExtra("currentPhotos"));
+            String currentPhotos = intent.getStringExtra("currentPhotos");
+            currentPhotoFolder.addAll(PhotoSelectorSetting.retrieve(currentPhotos));
+            PhotoSelectorSetting.remove(currentPhotos);
         } else {
             currentPhotoFolder.addAll(selectedPhotos);
         }
@@ -112,7 +115,6 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
                 Intent intent = new Intent(this, PhotoViewActivity.class);
                 intent.putExtra("isShowPreview", false);
                 intent.putExtra("selectedPhotos", (Serializable) selectedPhotos);
-                intent.putExtra("currentPhotos", (Serializable) currentPhotoFolder);
                 startActivityForResult(intent, REQUEST_PREVIEW_PHOTO);
             }
         } else if (v == binding.btSelectOriginalImage) {// 选择原图

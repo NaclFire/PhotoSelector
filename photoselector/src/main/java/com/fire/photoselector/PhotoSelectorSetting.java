@@ -1,5 +1,12 @@
 package com.fire.photoselector;
 
+import com.fire.photoselector.bean.ImagePathBean;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 /**
  * Created by Fire on 2017/4/10.
  */
@@ -30,4 +37,19 @@ public class PhotoSelectorSetting {
      */
     public static boolean IS_SELECTED_ORIGINAL_IMAGE = false;
     public static int ITEM_SIZE;
+    private static final Map<String, List<ImagePathBean>> cache = new HashMap<>();
+
+    public static String save(List<ImagePathBean> photos) {
+        String key = UUID.randomUUID().toString();
+        cache.put(key, photos);
+        return key;
+    }
+
+    public static List<ImagePathBean> retrieve(String key) {
+        return cache.get(key);
+    }
+
+    public static void remove(String key) {
+        cache.remove(key);
+    }
 }
