@@ -3,6 +3,7 @@ package com.fire.photoselectortest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -29,10 +30,12 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private ArrayList<ImagePathBean> result = new ArrayList<>();
     private Button btSelectPhoto;
+    private Button btSelectOriginImage;
     private RecyclerView rvList;
     private PhotoRecyclerViewAdapter photoRecyclerViewAdapter;
     private TextView tvSelectSum;
     private TextView tvColumnCount;
+    private boolean isShowSelectOrigin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,10 +44,25 @@ public class MainActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
         }
-        btSelectPhoto = (Button) findViewById(R.id.bt_select_photo);
-        rvList = (RecyclerView) findViewById(R.id.rv_list);
-        tvSelectSum = (TextView) findViewById(R.id.tv_select_sum);
-        tvColumnCount = (TextView) findViewById(R.id.tv_column_count);
+        btSelectPhoto = findViewById(R.id.bt_select_photo);
+        rvList = findViewById(R.id.rv_list);
+        tvSelectSum = findViewById(R.id.tv_select_sum);
+        tvColumnCount = findViewById(R.id.tv_column_count);
+        btSelectOriginImage = findViewById(R.id.bt_select_original_image);
+        btSelectOriginImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Drawable drawable;
+                if (isShowSelectOrigin) {
+                    drawable = getResources().getDrawable(com.fire.photoselector.R.drawable.svg_choose_original_image_default);
+                } else {
+                    drawable = getResources().getDrawable(com.fire.photoselector.R.drawable.svg_choose_original_image_checked);
+                }
+                drawable.setBounds(0, 0, drawable.getMinimumWidth(), drawable.getMinimumHeight());
+                btSelectOriginImage.setCompoundDrawables(drawable, null, null, null);
+                isShowSelectOrigin = !isShowSelectOrigin;
+            }
+        });
         rvList.setLayoutManager(new GridLayoutManager(this, 3));
         photoRecyclerViewAdapter = new PhotoRecyclerViewAdapter(this, result, false);
         rvList.setAdapter(photoRecyclerViewAdapter);
@@ -113,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
                 .setSelectedPhotos(result)
                 .setMaxPhotoSum(sum)
                 .setColumnCount(columnCount)
-                .setShowSelectOrigin(false)
+                .setShowSelectOrigin(isShowSelectOrigin)
                 .setOnPhotoSelectedCallback(new PhotoSelectorActivity.OnPhotoSelectedCallback() {
                     @Override
                     public void onPhotoSelected(List<ImagePathBean> photoList, boolean isSelectOrigin) {

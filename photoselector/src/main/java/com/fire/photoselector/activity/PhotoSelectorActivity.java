@@ -444,19 +444,18 @@ public class PhotoSelectorActivity extends AppCompatActivity implements OnClickL
             binding.btSelectOk.setText(format);
             binding.btPreviewImage.setTextColor(getResources().getColor(R.color.textBlackColor));
         }
+        Drawable drawable;
         if (PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE) {
             String string = getString(R.string.original_image_with_size);
             String format = String.format(string, FileUtils.getSizeString(FileUtils.getFileLength(selectedPhotos)));
             binding.btSelectOriginalImage.setText(format);
-            Drawable drawable = getResources().getDrawable(R.drawable.svg_choose_original_image_checked);
-            drawable.setBounds(0, 0, drawable.getMinimumWidth(), drawable.getMinimumHeight());
-            binding.btSelectOriginalImage.setCompoundDrawables(drawable, null, null, null);
+            drawable = getResources().getDrawable(R.drawable.svg_choose_original_image_checked);
         } else {
             binding.btSelectOriginalImage.setText(getString(R.string.full_image));
-            Drawable drawable = getResources().getDrawable(R.drawable.svg_choose_original_image_default);
-            drawable.setBounds(0, 0, drawable.getMinimumWidth(), drawable.getMinimumHeight());
-            binding.btSelectOriginalImage.setCompoundDrawables(drawable, null, null, null);
+            drawable = getResources().getDrawable(R.drawable.svg_choose_original_image_default);
         }
+        drawable.setBounds(0, 0, drawable.getMinimumWidth(), drawable.getMinimumHeight());
+        binding.btSelectOriginalImage.setCompoundDrawables(drawable, null, null, null);
     }
 
     private void sendNotifyMsg(int what, int index) {

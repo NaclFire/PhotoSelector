@@ -53,9 +53,26 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <Button
+            android:id="@+id/bt_select_original_image"
+            android:layout_width="wrap_content"
+            android:layout_height="25dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/button_unclickable"
+            android:drawableStart="@drawable/svg_choose_original_image_default"
+            android:drawablePadding="5dp"
+            android:gravity="center_vertical"
+            android:minWidth="65dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:text="@string/full_image"
+            android:textColor="@color/textBlackColor"
+            android:textSize="14sp" />
+
+        <Button
             android:id="@+id/bt_select_photo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
             android:text="选择照片" />
     </LinearLayout>
 
