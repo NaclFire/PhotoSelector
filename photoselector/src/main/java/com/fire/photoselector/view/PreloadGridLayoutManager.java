@@ -5,7 +5,7 @@ import android.content.Context;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.fire.photoselector.models.PhotoSelectorSetting;
+import com.fire.photoselector.PhotoSelectorSetting;
 
 public class PreloadGridLayoutManager extends GridLayoutManager {
 

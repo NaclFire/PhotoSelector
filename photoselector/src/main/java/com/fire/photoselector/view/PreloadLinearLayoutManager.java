@@ -5,7 +5,7 @@ import android.content.Context;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.fire.photoselector.models.PhotoSelectorSetting;
+import com.fire.photoselector.PhotoSelectorSetting;
 
 public class PreloadLinearLayoutManager extends LinearLayoutManager {
 

@@ -17,7 +17,6 @@ import com.bumptech.glide.request.RequestOptions;
 import com.fire.photoselector.R;
 import com.fire.photoselector.bean.ImageFolderBean;
 import com.fire.photoselector.bean.ImagePathBean;
-import com.fire.photoselector.models.PhotoSelectorSetting;
 import com.fire.photoselector.utils.ScreenUtil;
 
 import java.util.List;
@@ -32,11 +31,17 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
     private List<ImageFolderBean> list;
     private OnRecyclerViewItemClickListener listener;
     private final RequestOptions transform;
+    private List<ImagePathBean> selectedPhotos;
 
     public FolderListAdapter(Context context, List<ImageFolderBean> list) {
         this.context = context;
         this.list = list;
         transform = new RequestOptions().transform(new CenterCrop(), new RoundedCorners(ScreenUtil.dp2px(context, 5)));
+    }
+
+    public void setSelectedPhotos(List<ImagePathBean> selectedPhotos) {
+        this.selectedPhotos = selectedPhotos;
+        notifyDataSetChanged();
     }
 
     public interface OnRecyclerViewItemClickListener {
@@ -57,7 +62,7 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
     public void onBindViewHolder(ViewHolder holder, int position) {
         List<ImagePathBean> imagePaths = list.get(position).getImagePaths();
         for (ImagePathBean imagePath : imagePaths) {
-            if (PhotoSelectorSetting.isPhotoSelected(imagePath)) {
+            if (selectedPhotos != null && selectedPhotos.contains(imagePath)) {
                 holder.ivPhotoFilterChecked.setVisibility(View.VISIBLE);
                 break;
             } else {

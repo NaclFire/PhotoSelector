@@ -1,6 +1,5 @@
 package com.fire.photoselector.adapter;
 
-import static com.fire.photoselector.models.PhotoSelectorSetting.SELECTED_PHOTOS;
 
 import android.app.Activity;
 import android.content.Context;
@@ -21,7 +20,7 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
 import com.fire.photoselector.R;
 import com.fire.photoselector.bean.ImagePathBean;
-import com.fire.photoselector.models.PhotoSelectorSetting;
+import com.fire.photoselector.PhotoSelectorSetting;
 import com.fire.photoselector.view.SquareImageView;
 
 import java.util.List;
@@ -39,6 +38,7 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
     private List<ImagePathBean> list;
     private Context context;
     private OnRecyclerViewItemClickListener listener;
+    private List<ImagePathBean> selectedPhotos;
 
     public PhotoListAdapter(Context context, List<ImagePathBean> list) {
         this.context = context;
@@ -61,6 +61,10 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
     public void setData(List<ImagePathBean> list) {
         this.list = list;
         notifyDataSetChanged();
+    }
+
+    public void setSelectedPhotos(List<ImagePathBean> selectedPhotos) {
+        this.selectedPhotos = selectedPhotos;
     }
 
     public void updatePhotoList(RecyclerView recyclerView, List<ImagePathBean> list) {
@@ -109,7 +113,7 @@ public class PhotoListAdapter extends RecyclerView.Adapter<PhotoListAdapter.View
             } else {
                 holder.ivGifImage.setVisibility(View.GONE);
             }
-            if (SELECTED_PHOTOS.contains(list.get(position))) {
+            if (selectedPhotos != null && selectedPhotos.contains(list.get(position))) {
                 holder.ivPhotoChecked.setImageResource(R.drawable.svg_compose_photo_preview_checked);
             } else {
                 holder.ivPhotoChecked.setImageResource(R.drawable.svg_compose_photo_preview_default);

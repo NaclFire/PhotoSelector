@@ -1,6 +1,5 @@
 package com.fire.photoselectortest;
 
-import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -17,7 +16,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -63,7 +61,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
     }
 
     @Override
@@ -116,11 +113,12 @@ public class MainActivity extends AppCompatActivity {
                 .setSelectedPhotos(result)
                 .setMaxPhotoSum(sum)
                 .setColumnCount(columnCount)
-                .setShowSelectOrigin(true)
+                .setShowSelectOrigin(false)
                 .setOnPhotoSelectedCallback(new PhotoSelectorActivity.OnPhotoSelectedCallback() {
                     @Override
                     public void onPhotoSelected(List<ImagePathBean> photoList, boolean isSelectOrigin) {
-                        result = (ArrayList<ImagePathBean>) photoList;
+                        result.clear();
+                        result.addAll(photoList);
                         photoRecyclerViewAdapter.setList(result, isSelectOrigin);
                     }
                 })

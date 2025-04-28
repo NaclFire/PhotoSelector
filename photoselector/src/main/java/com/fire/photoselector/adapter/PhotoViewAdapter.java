@@ -11,7 +11,7 @@ import androidx.viewpager.widget.PagerAdapter;
 import com.bumptech.glide.Glide;
 import com.fire.photoselector.R;
 import com.fire.photoselector.bean.ImagePathBean;
-import com.fire.photoselector.models.PhotoSelectorSetting;
+import com.fire.photoselector.PhotoSelectorSetting;
 import com.fire.photoselector.view.photoview.PhotoView;
 
 import java.util.ArrayList;

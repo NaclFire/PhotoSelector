@@ -1,13 +1,5 @@
 package com.fire.photoselector.activity;
 
-import static com.fire.photoselector.models.PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE;
-import static com.fire.photoselector.models.PhotoSelectorSetting.LAST_MODIFIED_LIST;
-import static com.fire.photoselector.models.PhotoSelectorSetting.MAX_PHOTO_SUM;
-import static com.fire.photoselector.models.PhotoSelectorSetting.PHOTOS_LIST_TRANSFER;
-import static com.fire.photoselector.models.PhotoSelectorSetting.SCREEN_RATIO;
-import static com.fire.photoselector.models.PhotoSelectorSetting.SELECTED_PHOTOS;
-import static com.fire.photoselector.models.PhotoSelectorSetting.STATUS_BAR_HEIGHT;
-
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -30,11 +22,13 @@ import com.fire.photoselector.R;
 import com.fire.photoselector.adapter.PhotoViewAdapter;
 import com.fire.photoselector.bean.ImagePathBean;
 import com.fire.photoselector.databinding.ActivityPhotoViewBinding;
-import com.fire.photoselector.models.PhotoSelectorSetting;
+import com.fire.photoselector.PhotoSelectorSetting;
 import com.fire.photoselector.utils.FileUtils;
 import com.fire.photoselector.utils.ScreenUtil;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Fire on 2017/4/11.
@@ -47,7 +41,9 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
     private PhotoViewAdapter photoViewAdapter;
     private ActivityPhotoViewBinding binding;
     private boolean isShowPreview;
-    private ArrayList<ImagePathBean> currentList = new ArrayList<>();
+    //    private List<ImagePathBean> currentList = new ArrayList<>();
+    private List<ImagePathBean> selectedPhotos = new ArrayList<>();
+    private List<ImagePathBean> currentPhotoFolder = new ArrayList<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -61,10 +57,17 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
         binding.ivPhotoSelected.setOnClickListener(this);
         binding.btPreviewImage.setOnClickListener(this);
         binding.btSelectOriginalImage.setOnClickListener(this);
+        binding.btSelectOriginalImage.setVisibility(PhotoSelectorSetting.IS_SHOW_SELECTED_ORIGINAL_IMAGE ? View.VISIBLE : View.GONE);
         Intent intent = getIntent();
         int index = intent.getIntExtra("Index", 0);
+        selectedPhotos.addAll((List<ImagePathBean>) intent.getSerializableExtra("selectedPhotos"));
         isShowPreview = intent.getBooleanExtra("isShowPreview", true);
-        photoViewAdapter = new PhotoViewAdapter(this, PHOTOS_LIST_TRANSFER);
+        if (isShowPreview) {
+            currentPhotoFolder.addAll((List<ImagePathBean>) intent.getSerializableExtra("currentPhotos"));
+        } else {
+            currentPhotoFolder.addAll(selectedPhotos);
+        }
+        photoViewAdapter = new PhotoViewAdapter(this, currentPhotoFolder);
         photoViewAdapter.setOnPhotoViewClickListener((view, position) -> {
             toggleTitleBar();
         });
@@ -80,10 +83,10 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
         if (v == binding.ivSelectCancel) {
             finish();
         } else if (v == binding.btSelectOk) {
-            if (SELECTED_PHOTOS.size() != 0) {
-                ArrayList<ImagePathBean> image = new ArrayList<>(SELECTED_PHOTOS);
+            if (selectedPhotos.size() != 0) {
+//                ArrayList<ImagePathBean> image = new ArrayList<>(SELECTED_PHOTOS);
                 Intent intent = new Intent();
-                intent.putExtra(LAST_MODIFIED_LIST, image);
+                intent.putExtra("selectedPhotos", (Serializable) selectedPhotos);
                 setResult(RESULT_OK, intent);
                 finish();
             }
@@ -91,7 +94,7 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
             // 当前ViewPager页面脚标
             int position = binding.vpPhotoView.getCurrentItem();
             // 添加/删除当前页面照片
-            boolean result = PhotoSelectorSetting.togglePhotoSelected(PHOTOS_LIST_TRANSFER.get(position));
+            boolean result = togglePhotoSelected(currentPhotoFolder.get(position));
             if (result) {
                 // 添加/删除成功
                 changePhotoSelectStatus(position);
@@ -99,23 +102,21 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
                 // 添加失败,超出可选照片上限
                 binding.ivPhotoSelected.setImageResource(R.drawable.svg_compose_photo_preview_default);
                 String string = getString(R.string.photo_sum_max);
-                String format = String.format(string, MAX_PHOTO_SUM);
+                String format = String.format(string, PhotoSelectorSetting.MAX_PHOTO_SUM);
                 Toast.makeText(this, format, Toast.LENGTH_SHORT).show();
             }
             // 更改确定按钮文字
             changeOKButtonStatus();
         } else if (v == binding.btPreviewImage) {// 预览照片
-            if (SELECTED_PHOTOS.size() != 0) {
-                currentList.clear();
-                currentList.addAll(PHOTOS_LIST_TRANSFER);
+            if (selectedPhotos.size() != 0) {
                 Intent intent = new Intent(this, PhotoViewActivity.class);
-                PHOTOS_LIST_TRANSFER.clear();
-                PHOTOS_LIST_TRANSFER.addAll(SELECTED_PHOTOS);
                 intent.putExtra("isShowPreview", false);
+                intent.putExtra("selectedPhotos", (Serializable) selectedPhotos);
+                intent.putExtra("currentPhotos", (Serializable) currentPhotoFolder);
                 startActivityForResult(intent, REQUEST_PREVIEW_PHOTO);
             }
         } else if (v == binding.btSelectOriginalImage) {// 选择原图
-            IS_SELECTED_ORIGINAL_IMAGE = !IS_SELECTED_ORIGINAL_IMAGE;
+            PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE = !PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE;
             changeOKButtonStatus();
         }
     }
@@ -126,15 +127,13 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
         switch (requestCode) {
             case REQUEST_PREVIEW_PHOTO:
                 if (resultCode == RESULT_OK) {
-                    PHOTOS_LIST_TRANSFER.clear();
-                    PHOTOS_LIST_TRANSFER.addAll(SELECTED_PHOTOS);
+//                    PHOTOS_LIST_TRANSFER.clear();
+//                    PHOTOS_LIST_TRANSFER.addAll(SELECTED_PHOTOS);
                     Intent intent = new Intent();
-                    intent.putExtra(LAST_MODIFIED_LIST, PHOTOS_LIST_TRANSFER);
+                    intent.putExtra("selectedPhotos", (Serializable) selectedPhotos);
                     setResult(RESULT_OK, intent);
                     finish();
                 } else {
-                    PHOTOS_LIST_TRANSFER.clear();
-                    PHOTOS_LIST_TRANSFER.addAll(currentList);
                     changePhotoSelectStatus(binding.vpPhotoView.getCurrentItem());
                     changeOKButtonStatus();
                 }
@@ -170,7 +169,7 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
      * @param position
      */
     private void changePhotoSelectStatus(int position) {
-        if (PhotoSelectorSetting.isPhotoSelected(PHOTOS_LIST_TRANSFER.get(position))) {
+        if (selectedPhotos.contains(currentPhotoFolder.get(position))) {
             binding.ivPhotoSelected.setImageResource(R.drawable.svg_compose_photo_preview_checked);
         } else {
             binding.ivPhotoSelected.setImageResource(R.drawable.svg_compose_photo_preview_default);
@@ -182,7 +181,7 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
      */
     private void changeOKButtonStatus() {
         binding.btPreviewImage.setVisibility(isShowPreview ? View.VISIBLE : View.GONE);
-        if (SELECTED_PHOTOS.size() == 0) {
+        if (selectedPhotos.size() == 0) {
             binding.btSelectOk.setBackgroundResource(R.drawable.button_unclickable);
             binding.btSelectOk.setTextColor(getResources().getColor(R.color.textSecondColor));
             binding.btSelectOk.setText(getString(R.string.ok));
@@ -191,13 +190,13 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
             binding.btSelectOk.setBackgroundResource(R.drawable.button_clickable);
             binding.btSelectOk.setTextColor(getResources().getColor(R.color.textWriteColor));
             String string = getResources().getString(R.string.ok_with_number);
-            String format = String.format(string, SELECTED_PHOTOS.size());
+            String format = String.format(string, selectedPhotos.size());
             binding.btSelectOk.setText(format);
             binding.btPreviewImage.setTextColor(getResources().getColor(R.color.textBlackColor));
         }
-        if (IS_SELECTED_ORIGINAL_IMAGE) {
+        if (PhotoSelectorSetting.IS_SELECTED_ORIGINAL_IMAGE) {
             String string = getString(R.string.original_image_with_size);
-            String format = String.format(string, FileUtils.getSizeString(FileUtils.getFileLength(SELECTED_PHOTOS)));
+            String format = String.format(string, FileUtils.getSizeString(FileUtils.getFileLength(selectedPhotos)));
             binding.btSelectOriginalImage.setText(format);
             Drawable drawable = getResources().getDrawable(R.drawable.svg_choose_original_image_checked);
             drawable.setBounds(0, 0, drawable.getMinimumWidth(), drawable.getMinimumHeight());
@@ -220,12 +219,12 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
         binding.llPhotoViewButton.setVisibility(visibility == View.VISIBLE ? View.GONE : View.VISIBLE);
         WindowManager.LayoutParams lp = getWindow().getAttributes();
         if (visibility == View.VISIBLE) {//设置为全屏
-            SCREEN_RATIO = (float) binding.vpPhotoView.getWidth() / binding.vpPhotoView.getHeight();
+            PhotoSelectorSetting.SCREEN_RATIO = (float) binding.vpPhotoView.getWidth() / binding.vpPhotoView.getHeight();
             lp.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
             getWindow().setAttributes(lp);
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         } else {//设置为非全屏
-            SCREEN_RATIO = (float) binding.vpPhotoView.getWidth() / binding.vpPhotoView.getHeight();
+            PhotoSelectorSetting.SCREEN_RATIO = (float) binding.vpPhotoView.getWidth() / binding.vpPhotoView.getHeight();
             lp.flags &= (~WindowManager.LayoutParams.FLAG_FULLSCREEN);
             getWindow().setAttributes(lp);
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
@@ -245,7 +244,21 @@ public class PhotoViewActivity extends AppCompatActivity implements OnClickListe
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.setStatusBarColor(Color.TRANSPARENT);
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) binding.rlPhotoViewButton.getLayoutParams();
-        layoutParams.height = ScreenUtil.dp2px(this, 45) + STATUS_BAR_HEIGHT;
+        layoutParams.height = ScreenUtil.dp2px(this, 45) + PhotoSelectorSetting.STATUS_BAR_HEIGHT;
+    }
+
+    public boolean togglePhotoSelected(ImagePathBean imagePathBean) {
+        if (selectedPhotos.contains(imagePathBean)) {
+            selectedPhotos.remove(imagePathBean);
+            return true;
+        } else {
+            if (selectedPhotos.size() == PhotoSelectorSetting.MAX_PHOTO_SUM) {
+                return false;
+            } else {
+                selectedPhotos.add(imagePathBean);
+                return true;
+            }
+        }
     }
 
     @Override
