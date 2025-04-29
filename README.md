@@ -3,10 +3,10 @@
 
 再看看一个简单的相机拍照录像的工具：[CameraX](https://github.com/NaclFire/CameraX)
 ## 效果图
-![照片选择器](./Demo1.png)
-![照片选择器](./Demo2.png)
-![照片选择器](./Demo3.png)
-![照片选择器](./Demo4.gif)
+![照片选择器](Demo1.png)
+![照片选择器](Demo2.png)
+![照片选择器](Demo3.png)
+![照片选择器](Demo4.gif)
 
 ## 如何使用
 
