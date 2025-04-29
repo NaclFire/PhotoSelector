@@ -29,7 +29,7 @@ allprojects {
 dependencies {
 	...
     implementation 'com.github.NaclFire:PhotoSelector:1.5.3'
-    implementation 'com.github.NaclFire:PhotoSelector:1.6.1X'//AndroidX依赖，与上面二选一
+    implementation 'com.github.NaclFire:PhotoSelector:1.6.2X'//AndroidX依赖，与上面二选一
 }
 ```
 2.在AndroidManifest.xml中添加权限:
